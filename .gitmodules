@@ -1,0 +1,6 @@
+[submodule "rpm-tools"]
+	path = rpm-tools
+	url = https://github.com/PVermeer/rpm-tools.git
+[submodule "Sunshine"]
+	path = Sunshine
+	url = https://github.com/LizardByte/Sunshine.git
