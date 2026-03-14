@@ -35,13 +35,14 @@ BuildRequires: libdrm-devel
 BuildRequires: libva-devel
 BuildRequires: libnotify-devel
 BuildRequires: nodejs
+BuildRequires: npm
 BuildRequires: libevdev-devel
 BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: numactl-devel
 
 # Needs external repo, enable this in COPR: 
-# https://developer.download.nvidia.com/compute/cuda/repos/fedora$releasever/$basearch/cuda-fedora$releasever.repo
+# https://developer.download.nvidia.com/compute/cuda/repos/fedora$releasever/$basearch
 BuildRequires: cuda-toolkit
 
 Requires: libappindicator-gtk3
