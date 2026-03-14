@@ -40,6 +40,7 @@ BuildRequires: libevdev-devel
 BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: numactl-devel
+BuildRequires: libcap-devel
 
 # Needs external repo, enable this in COPR: 
 # https://developer.download.nvidia.com/compute/cuda/repos/fedora$releasever/$basearch
