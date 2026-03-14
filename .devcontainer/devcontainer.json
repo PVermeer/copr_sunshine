@@ -21,7 +21,7 @@
 		"DISPLAY": "${localEnv:DISPLAY}"
 	},
 	"mounts": [],
-	"postCreateCommand": "sudo dnf update -y && sudo dnf install -y rpmdevtools rpmlint jq && git submodule deinit -f --all && git submodule update --init --recursive --depth 1",
+	"postCreateCommand": "sudo dnf update -y && sudo dnf install -y rpmdevtools rpmlint jq && bash ./.devcontainer/install-deps.sh && git submodule deinit -f --all && git submodule update --init --recursive --depth 1",
 	"postStartCommand": "sudo dnf update -y && git pull && git submodule update --recursive --init --depth 1",
 	"remoteUser": "vscode",
 	"customizations": {
@@ -37,7 +37,8 @@
 				"ms-azuretools.vscode-containers",
 				"RVSmartPorting.rpm-spec-ext",
 				"IronGeek.vscode-env",
-				"github.vscode-github-actions"
+				"github.vscode-github-actions",
+				"ms-vscode.cmake-tools"
 			]
 		}
 	}
