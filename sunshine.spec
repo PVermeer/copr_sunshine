@@ -16,7 +16,7 @@
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
 
-Name: Sunshine
+Name: sunshine
 Version: 2025.924.154138
 Release: 1.%{versioncommit}%{?dist}
 License: GPL-3.0 license
@@ -26,6 +26,9 @@ Url: %{coprrepo}
 BuildRequires: git
 BuildRequires: cmake
 BuildRequires: ninja-build
+BuildRequires: conda
+BuildRequires: gcc
+BuildRequires: g++
 BuildRequires: mesa-libgbm-devel
 BuildRequires: libappindicator-gtk3-devel
 BuildRequires: openssl-devel
@@ -41,10 +44,6 @@ BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: numactl-devel
 BuildRequires: libcap-devel
-
-# Needs external repo, enable this in COPR: 
-# https://developer.download.nvidia.com/compute/cuda/repos/fedora$releasever/$basearch
-BuildRequires: cuda-toolkit
 
 Requires: libappindicator-gtk3
 Requires: openssl
@@ -93,7 +92,23 @@ Stable build of sunshine.
   rm -rf .git
   cd %{workdir}
 %endif
-# Do src stuff
+
+# Install cuda compiler (nvcc)
+(
+  echo -e "\n==== Init"
+  conda init || true
+  # shellcheck disable=SC1090
+  source ~/.bashrc
+  echo -e "\n==== Create env"
+  conda create -y --name cuda
+  echo -e "\n==== Activate"
+  conda activate cuda
+  echo -e "\n==== Install nvcc"
+  conda install -y cuda-nvcc
+  echo -e "\n==== Deactivate"
+  conda deactivate
+  conda init --reverse || true
+)
 
 %build
 cd %{sourcedir}
@@ -123,7 +138,7 @@ cmake_args=(
   "-DSUNSHINE_PUBLISHER_WEBSITE=https://app.lizardbyte.dev"
   "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://app.lizardbyte.dev/support"
   "-DSUNSHINE_ENABLE_CUDA=ON"
-  "-DCMAKE_CUDA_COMPILER:PATH=/usr/local/cuda/bin/nvcc"
+  "-DCMAKE_CUDA_COMPILER:PATH=~/.conda/envs/cuda/bin/nvcc"
 )
 cmake "${cmake_args[@]}"
 ninja -C "build"
