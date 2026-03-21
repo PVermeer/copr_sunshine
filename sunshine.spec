@@ -66,9 +66,18 @@ Stable build of sunshine.
 %define sourcedir %{workdir}/%{source}
 
 %prep
-# Install cuda compiler (nvcc)
+# Install cuda compiler (nvcc) with conda or micromamba
 if [[ ! $(which conda) ]]; then
-  curl -L https://micro.mamba.pm/api/micromamba/linux-aarch64/latest | tar -xvj bin/conda
+  RPM_ARCH=%{_arch}
+  mkdir -p %{_builddir}/bin
+  # Download micromamba and expose it as "conda"
+  if [ "$RPM_ARCH" = "x86_64" ]; then
+    curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj -O bin/micromamba > %{_builddir}/bin/conda
+  else
+    curl -Ls https://micro.mamba.pm/api/micromamba/linux-%{_arch}/latest | tar -xj -O bin/micromamba > %{_builddir}/bin/conda
+  fi
+  chmod +x %{_builddir}/bin/conda
+  export PATH=%{_builddir}/bin:$PATH
 fi
 (
   echo -e "\n==== Init"
