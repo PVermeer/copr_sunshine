@@ -97,7 +97,6 @@ Stable build of sunshine.
 (
   echo -e "\n==== Init"
   conda init || true
-  # shellcheck disable=SC1090
   source ~/.bashrc
   echo -e "\n==== Create env"
   conda create -y --name cuda
@@ -115,13 +114,11 @@ cd %{sourcedir}
 
 export RPM_ARCH=%{_arch}
 
-export CUDA_HOME=/usr/local/cuda
-export LIBRARY_PATH=$CUDA_HOME/lib64:$LIBRARY_PATH
-export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
-
 export BRANCH=stable
 export BUILD_VERSION=%{version}
 export COMMIT=%{commit}
+
+export CONDA_PREFIX=~/.conda/envs/cuda/
 
 cmake_args=(
   "-B=build"
@@ -138,7 +135,11 @@ cmake_args=(
   "-DSUNSHINE_PUBLISHER_WEBSITE=https://app.lizardbyte.dev"
   "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://app.lizardbyte.dev/support"
   "-DSUNSHINE_ENABLE_CUDA=ON"
-  "-DCMAKE_CUDA_COMPILER:PATH=~/.conda/envs/cuda/bin/nvcc"
+  "-DCMAKE_C_COMPILER=/usr/sbin/gcc"
+  "-DCMAKE_CXX_COMPILER=/usr/sbin/g++"
+  "-DCMAKE_CUDA_COMPILER=$CONDA_PREFIX/bin/nvcc"
+  "-DCMAKE_CUDA_HOST_COMPILER=$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-g++"
+  "-DCMAKE_CUDA_COMPILER:PATH=$CONDA_PREFIX/bin/nvcc"
 )
 cmake "${cmake_args[@]}"
 ninja -C "build"
