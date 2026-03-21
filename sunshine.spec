@@ -62,6 +62,22 @@ Stable build of sunshine.
 %define sourcedir %{workdir}/%{source}
 
 %prep
+# Install cuda compiler (nvcc)
+(
+  echo -e "\n==== Init"
+  conda init || true
+  source ~/.bashrc
+  echo -e "\n==== Create env"
+  conda create -y --name cuda
+  echo -e "\n==== Activate"
+  conda activate cuda
+  echo -e "\n==== Install nvcc"
+  conda install -y cuda-nvcc
+  echo -e "\n==== Deactivate"
+  conda deactivate
+  conda init --reverse || true
+)
+
 # To apply working changes handle sources / patches locally
 # COPR should clone the commited changes
 %if %{with local}
@@ -91,21 +107,6 @@ Stable build of sunshine.
   cd %{workdir}
 %endif
 
-# Install cuda compiler (nvcc)
-(
-  echo -e "\n==== Init"
-  conda init || true
-  source ~/.bashrc
-  echo -e "\n==== Create env"
-  conda create -y --name cuda
-  echo -e "\n==== Activate"
-  conda activate cuda
-  echo -e "\n==== Install nvcc"
-  conda install -y cuda-nvcc
-  echo -e "\n==== Deactivate"
-  conda deactivate
-  conda init --reverse || true
-)
 
 %build
 cd %{sourcedir}
