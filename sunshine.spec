@@ -26,36 +26,37 @@ Url: %{coprrepo}
 
 BuildRequires: git
 BuildRequires: cmake
-BuildRequires: ninja-build
-BuildRequires: conda
 BuildRequires: gcc
-BuildRequires: g++
-BuildRequires: mesa-libgbm-devel
-BuildRequires: libappindicator-gtk3-devel
+BuildRequires: gcc-c++
+BuildRequires: curl
 BuildRequires: openssl-devel
 BuildRequires: libcurl-devel
-BuildRequires: miniupnpc-devel
 BuildRequires: libdrm-devel
 BuildRequires: libva-devel
 BuildRequires: libnotify-devel
 BuildRequires: nodejs
 BuildRequires: npm
 BuildRequires: libevdev-devel
+BuildRequires: libcap-devel
+%if 0%{?fedora}
+BuildRequires: ninja-build
+BuildRequires: conda
+BuildRequires: libappindicator-gtk3-devel
+BuildRequires: mesa-libgbm-devel
+BuildRequires: miniupnpc-devel
+BuildRequires: numactl-devel
 BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
-BuildRequires: numactl-devel
-BuildRequires: libcap-devel
-
-Requires: libappindicator-gtk3
-Requires: openssl
-Requires: libcurl
-Requires: miniupnpc
-Requires: libdrm
-Requires: libva
-Requires: libnotify
-Requires: libevdev
-Requires: opus
-Requires: numactl
+%endif
+%if 0%{?suse_version}
+BuildRequires: ninja
+BuildRequires: libappindicator3-devel
+BuildRequires: Mesa-libGL-devel
+BuildRequires: libminiupnpc-devel
+BuildRequires: libnuma-devel
+BuildRequires: libopus-devel
+BuildRequires: libpulse-devel
+%endif
 
 %description
 Stable build of sunshine.
@@ -66,6 +67,9 @@ Stable build of sunshine.
 
 %prep
 # Install cuda compiler (nvcc)
+if [[ ! $(which conda) ]]; then
+  curl -L https://micro.mamba.pm/api/micromamba/linux-aarch64/latest | tar -xvj bin/conda
+fi
 (
   echo -e "\n==== Init"
   conda init || true
