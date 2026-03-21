@@ -76,11 +76,11 @@ mkdir -p %{bindir}
 if [ "$RPM_ARCH" = "x86_64" ]; then
   curl -L --fail --retry 5 --retry-delay 2 \
   -o /tmp/micromamba.tar.bz2 \
-    https://micro.mamba.pm/api/micromamba/linux-64/latest
+    https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-linux-64.tar.bz2
 else
   curl -L --fail --retry 5 --retry-delay 2 \
   -o /tmp/micromamba.tar.bz2 \
-    https://micro.mamba.pm/api/micromamba/linux-%{_arch}/latest
+    https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-linux-%{_arch}.tar.bz2
 fi
 tar -xjf /tmp/micromamba.tar.bz2 -C /tmp
 install -Dm755 /tmp/bin/micromamba %{bindir}/micromamba
