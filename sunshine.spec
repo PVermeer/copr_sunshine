@@ -137,8 +137,7 @@ cmake_args=(
   "-DCMAKE_C_COMPILER=/usr/sbin/gcc"
   "-DCMAKE_CXX_COMPILER=/usr/sbin/g++"
   "-DCMAKE_CUDA_COMPILER=$CONDA_PREFIX/bin/nvcc"
-  "-DCMAKE_CUDA_HOST_COMPILER=$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-g++"
-  "-DCMAKE_CUDA_COMPILER:PATH=$CONDA_PREFIX/bin/nvcc"
+  "-DCMAKE_CUDA_HOST_COMPILER=$CONDA_PREFIX/bin/%{_arch}-conda-linux-gnu-g++"
 )
 cmake "${cmake_args[@]}"
 ninja -C "build"
