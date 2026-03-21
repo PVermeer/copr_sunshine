@@ -67,11 +67,11 @@ Stable build of sunshine.
 %define cudadir %{_builddir}/cuda-env
 
 %prep
+mkdir -p %{bindir}
 export PATH=%{bindir}:$PATH
 
 # Install cuda compiler (nvcc) with micromamba (conda)
 RPM_ARCH=%{_arch}
-mkdir -p %{bindir}
 
 if [ "$RPM_ARCH" = "x86_64" ]; then
   curl -L --fail --retry 5 --retry-delay 2 \
@@ -87,7 +87,7 @@ install -Dm755 /tmp/bin/micromamba %{bindir}/micromamba
 
 micromamba create -y -p %{cudadir} cuda-nvcc
 
-# To apply working changes handle sources / patches locally
+# To apply working changes, handle sources / patches locally
 # COPR should clone the commited changes
 %if 0%{?with_local}
   # Get sources / patches - local build
@@ -141,8 +141,6 @@ cmake_args=(
   "-DSUNSHINE_PUBLISHER_WEBSITE=https://app.lizardbyte.dev"
   "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://app.lizardbyte.dev/support"
   "-DSUNSHINE_ENABLE_CUDA=ON"
-  "-DCMAKE_C_COMPILER=/usr/sbin/gcc"
-  "-DCMAKE_CXX_COMPILER=/usr/sbin/g++"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
 )
