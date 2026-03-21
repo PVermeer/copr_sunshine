@@ -1,6 +1,8 @@
 # Create an option to build locally without fetchting own repo
 # for sourcing and patching
-%bcond local 0
+%{!?with_local:%global with_local 0}
+
+# Cross build causes issues
 %undefine _hardened_build
 
 # Source repo
@@ -81,7 +83,7 @@ Stable build of sunshine.
 
 # To apply working changes handle sources / patches locally
 # COPR should clone the commited changes
-%if %{with local}
+%if 0%{?with_local}
   # Get sources / patches - local build
   mkdir -p %{coprdir}
   cp -r %{_topdir}/SOURCES/* %{coprdir}
