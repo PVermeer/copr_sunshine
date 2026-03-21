@@ -40,7 +40,6 @@ BuildRequires: libevdev-devel
 BuildRequires: libcap-devel
 %if 0%{?fedora}
 BuildRequires: ninja-build
-BuildRequires: conda
 BuildRequires: libappindicator-gtk3-devel
 BuildRequires: mesa-libgbm-devel
 BuildRequires: miniupnpc-devel
@@ -64,35 +63,29 @@ Stable build of sunshine.
 %define workdir %{_builddir}/%{name}
 %define coprdir %{workdir}/%{coprsource}
 %define sourcedir %{workdir}/%{source}
+%define bindir %{_builddir}/bin
+%define cudadir %{_builddir}/cuda-env
 
 %prep
-# Install cuda compiler (nvcc) with conda or micromamba
-if [[ ! $(which conda) ]]; then
-  RPM_ARCH=%{_arch}
-  mkdir -p %{_builddir}/bin
-  # Download micromamba and expose it as "conda"
-  if [ "$RPM_ARCH" = "x86_64" ]; then
-    curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj -O bin/micromamba > %{_builddir}/bin/conda
-  else
-    curl -Ls https://micro.mamba.pm/api/micromamba/linux-%{_arch}/latest | tar -xj -O bin/micromamba > %{_builddir}/bin/conda
-  fi
-  chmod +x %{_builddir}/bin/conda
-  export PATH=%{_builddir}/bin:$PATH
+export PATH=%{bindir}:$PATH
+
+# Install cuda compiler (nvcc) with micromamba (conda)
+RPM_ARCH=%{_arch}
+mkdir -p %{bindir}
+
+if [ "$RPM_ARCH" = "x86_64" ]; then
+  curl -L --fail --retry 5 --retry-delay 2 \
+  -o /tmp/micromamba.tar.bz2 \
+    https://micro.mamba.pm/api/micromamba/linux-64/latest
+else
+  curl -L --fail --retry 5 --retry-delay 2 \
+  -o /tmp/micromamba.tar.bz2 \
+    https://micro.mamba.pm/api/micromamba/linux-%{_arch}/latest
 fi
-(
-  echo -e "\n==== Init"
-  conda init || true
-  source ~/.bashrc
-  echo -e "\n==== Create env"
-  conda create -y --name cuda
-  echo -e "\n==== Activate"
-  conda activate cuda
-  echo -e "\n==== Install nvcc"
-  conda install -y cuda-nvcc
-  echo -e "\n==== Deactivate"
-  conda deactivate
-  conda init --reverse || true
-)
+tar -xjf /tmp/micromamba.tar.bz2 -C /tmp
+install -Dm755 /tmp/bin/micromamba %{bindir}/micromamba
+
+micromamba create -y -p %{cudadir} cuda-nvcc
 
 # To apply working changes handle sources / patches locally
 # COPR should clone the commited changes
@@ -123,17 +116,12 @@ fi
   cd %{workdir}
 %endif
 
-
 %build
 cd %{sourcedir}
-
-export RPM_ARCH=%{_arch}
 
 export BRANCH=stable
 export BUILD_VERSION=%{version}
 export COMMIT=%{commit}
-
-export CONDA_PREFIX=~/.conda/envs/cuda/
 
 cmake_args=(
   "-B=build"
@@ -155,8 +143,8 @@ cmake_args=(
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_C_COMPILER=/usr/sbin/gcc"
   "-DCMAKE_CXX_COMPILER=/usr/sbin/g++"
-  "-DCMAKE_CUDA_COMPILER=$CONDA_PREFIX/bin/nvcc"
-  "-DCMAKE_CUDA_HOST_COMPILER=$CONDA_PREFIX/bin/%{_arch}-conda-linux-gnu-g++"
+  "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
+  "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
 )
 cmake "${cmake_args[@]}"
 ninja -C "build"
