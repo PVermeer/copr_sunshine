@@ -1,8 +1,6 @@
 # Create an option to build locally without fetchting own repo
 # for sourcing and patching
 %bcond local 0
- # Cannot compile CUDA with rpm hardening
-%undefine _hardened_build
 
 # Source repo
 %global author LizardByte
