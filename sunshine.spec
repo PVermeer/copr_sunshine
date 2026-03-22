@@ -154,6 +154,7 @@ if [ "$ID" = "opensuse-leap" ]; then
       cmake_args+=(
         "-DCMAKE_C_COMPILER=gcc-15"
         "-DCMAKE_CXX_COMPILER=g++-15"
+        "-DCMAKE_CUDA_HOST_COMPILER=gcc-15"
       )
   fi
 fi
