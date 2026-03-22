@@ -117,11 +117,16 @@ micromamba create -y -p %{cudadir} cuda-nvcc
 %endif
 
 %build
+source /etc/os-release
 cd %{sourcedir}
 
 export BRANCH=stable
 export BUILD_VERSION=%{version}
 export COMMIT=%{commit}
+
+if [ "$ID" = "opensuse-leap" ]; then
+  micromamba activate %{cudadir}
+fi
 
 cmake_args=(
   "-B=build"
@@ -146,6 +151,8 @@ cmake_args=(
 )
 cmake "${cmake_args[@]}"
 ninja -C "build"
+
+micromamba deactivate
 
 cd %{workdir}
 
