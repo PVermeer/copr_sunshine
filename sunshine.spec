@@ -2,8 +2,13 @@
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
-# Cross build causes issues
+# Cross build issues
 %undefine _hardened_build
+%if 0%{?suse_version}
+%if !0%{?_metainfodir:1}
+%global _metainfodir %{_datadir}/metainfo
+%endif
+%endif
 
 # Source repo
 %global author LizardByte
@@ -42,6 +47,7 @@ BuildRequires: libcap-devel
 # For tests ⤵
 BuildRequires: xorg-x11-server-Xvfb
 %if 0%{?fedora}
+BuildRequires: systemd-udev
 BuildRequires: appstream
 BuildRequires: libappstream-glib
 BuildRequires: libappindicator-gtk3-devel
@@ -54,6 +60,8 @@ BuildRequires: pulseaudio-libs-devel
 %if 0%{?suse_version}
 BuildRequires: gcc15
 BuildRequires: gcc15-c++
+BuildRequires: systemd
+BuildRequires: udev
 BuildRequires: AppStream
 BuildRequires: appstream-glib
 BuildRequires: libappindicator3-devel
@@ -176,16 +184,17 @@ make -j$(nproc) -C "%{sourcedir}/build"
 
 cd %{workdir}
 
-%check
-appstreamcli validate %{sourcedir}/build/*.metainfo.xml
-appstream-util validate %{sourcedir}/build/*.metainfo.xml
-desktop-file-validate %{sourcedir}/build/*.desktop
-cd %{sourcedir}/build/
-xvfb-run ./tests/test_sunshine || true
-
 %install
 cd %{sourcedir}/build
 %make_install
+
+%check
+appstreamcli validate %{buildroot}%{_metainfodir}/*.metainfo.xml
+appstream-util validate %{buildroot}%{_metainfodir}/*.metainfo.xml
+desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
+
+cd %{sourcedir}/build/
+xvfb-run ./tests/test_sunshine || true
 
 %post
 modprobe uhid
