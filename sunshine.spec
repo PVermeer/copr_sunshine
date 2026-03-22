@@ -28,6 +28,8 @@ BuildRequires: git
 BuildRequires: cmake
 BuildRequires: gcc
 BuildRequires: gcc-c++
+BuildRequires: appstream
+BuildRequires: desktop-file-utils
 BuildRequires: curl
 BuildRequires: openssl-devel
 BuildRequires: libcurl-devel
@@ -38,6 +40,8 @@ BuildRequires: nodejs
 BuildRequires: npm
 BuildRequires: libevdev-devel
 BuildRequires: libcap-devel
+# For tests ⤵
+BuildRequires: xorg-x11-server-Xvfb
 %if 0%{?fedora}
 BuildRequires: ninja-build
 BuildRequires: libappindicator-gtk3-devel
@@ -129,7 +133,7 @@ export COMMIT=%{commit}
 
 cmake_args=(
   "-B=build"
-  "-G=Ninja"
+  "-G=Unix Makefiles"
   "-S=."
   "-DBUILD_DOCS=OFF"
   "-DBUILD_WERROR=OFF"
@@ -167,46 +171,37 @@ if [ "$ID" = "opensuse-leap" ]; then
 fi
 
 cmake "${cmake_args[@]}"
-ninja -C "build"
+make -j$(nproc) -C "%{sourcedir}/build"
 
 cd %{workdir}
 
 %check
+appstreamcli validate %{sourcedir}/build/*.metainfo.xml
+appstream-util validate %{sourcedir}/build/*.metainfo.xml
+desktop-file-validate %{sourcedir}/build/*.desktop
+cd %{sourcedir}/build/
+xvfb-run ./tests/test_sunshine || true
 
 %install
-mkdir -p %{buildroot}%{_bindir}
-mkdir -p %{buildroot}%{_userunitdir}
-mkdir -p %{buildroot}%{_udevrulesdir}
-mkdir -p %{buildroot}%{_modulesloaddir}
-mkdir -p %{buildroot}%{_datadir}/applications
-mkdir -p %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
-mkdir -p %{buildroot}%{_datadir}/metainfo
-mkdir -p %{buildroot}%{_datadir}/sunshine
-
-install -m 0755 $(readlink -f %{sourcedir}/build/sunshine) %{buildroot}%{_bindir}/sunshine
-install -m 0644 %{sourcedir}/build/sunshine.service %{buildroot}%{_userunitdir}
-install -m 0644 %{sourcedir}/src_assets/linux/misc/*-sunshine.rules %{buildroot}%{_udevrulesdir}
-install -m 0644 %{sourcedir}/src_assets/linux/misc/*-sunshine.conf %{buildroot}%{_modulesloaddir}
-install -m 0644 %{sourcedir}/build/*.desktop %{buildroot}%{_datadir}/applications
-install -m 0644 %{sourcedir}/sunshine.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/sunshine.svg
-install -m 0644 %{sourcedir}/build/*.metainfo.xml %{buildroot}%{_datadir}/metainfo
-cp -aL %{sourcedir}/build/assets/* %{buildroot}%{_datadir}/sunshine
+cd %{sourcedir}/build
+%make_install
 
 %post
 modprobe uhid
 %udev_reload_rules
 udevadm trigger
-%systemd_post sunshine.service
 
 %postun
 %udev_reload_rules
 
 %files
 %caps(cap_sys_admin+p) %{_bindir}/sunshine
+%caps(cap_sys_admin+p) %{_bindir}/sunshine-*
 %{_userunitdir}/sunshine.service
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
 %{_datadir}/icons/hicolor/scalable/apps/sunshine.svg
+%{_datadir}/icons/hicolor/scalable/status/sunshine*.svg
 %{_datadir}/metainfo/*.metainfo.xml
 %{_datadir}/sunshine/**
