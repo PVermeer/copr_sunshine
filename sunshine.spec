@@ -196,7 +196,7 @@ cp -aL %{sourcedir}/build/assets/* %{buildroot}%{_datadir}/sunshine
 modprobe uhid
 %udev_reload_rules
 udevadm trigger
-%systemd_post %{service}
+%systemd_post sunshine.service
 
 %postun
 %udev_reload_rules
