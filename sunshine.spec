@@ -28,7 +28,6 @@ BuildRequires: git
 BuildRequires: cmake
 BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: appstream
 BuildRequires: desktop-file-utils
 BuildRequires: curl
 BuildRequires: openssl-devel
@@ -43,7 +42,8 @@ BuildRequires: libcap-devel
 # For tests ⤵
 BuildRequires: xorg-x11-server-Xvfb
 %if 0%{?fedora}
-BuildRequires: ninja-build
+BuildRequires: appstream
+BuildRequires: libappstream-glib
 BuildRequires: libappindicator-gtk3-devel
 BuildRequires: mesa-libgbm-devel
 BuildRequires: miniupnpc-devel
@@ -54,7 +54,8 @@ BuildRequires: pulseaudio-libs-devel
 %if 0%{?suse_version}
 BuildRequires: gcc15
 BuildRequires: gcc15-c++
-BuildRequires: ninja
+BuildRequires: AppStream
+BuildRequires: appstream-glib
 BuildRequires: libappindicator3-devel
 BuildRequires: libgbm-devel
 BuildRequires: Mesa-libGL-devel
