@@ -148,14 +148,21 @@ cmake_args=(
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
 )
+# On opensuse-leap 15.6 the system compiler is too old to build sunshine.
 if [ "$ID" = "opensuse-leap" ]; then
   GCC_MAJOR=$(gcc -dumpfullversion | cut -d. -f1)
   if [ "$GCC_MAJOR" -lt 15 ]; then
-      cmake_args+=(
-        "-DCMAKE_C_COMPILER=gcc-15"
-        "-DCMAKE_CXX_COMPILER=g++-15"
-        "-DCMAKE_CUDA_HOST_COMPILER=gcc-15"
-      )
+    cmake_args+=(
+      "-DCMAKE_C_COMPILER=gcc-15"
+      "-DCMAKE_CXX_COMPILER=g++-15"
+    )
+  fi
+  # Linking fails with libc symbol errors only on aarch64 (bug!?)
+  RPM_ARCH=%{_arch}
+  if [ "$RPM_ARCH" = "aarch64" ]; then
+    cmake_args+=(
+      "-DCMAKE_CUDA_HOST_COMPILER=gcc-15"
+    )
   fi
 fi
 
