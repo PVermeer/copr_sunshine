@@ -48,8 +48,8 @@ BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
 %endif
 %if 0%{?suse_version}
-BuildRequires: gcc14
-BuildRequires: gcc14-c++
+BuildRequires: gcc15
+BuildRequires: gcc15-c++
 BuildRequires: ninja
 BuildRequires: libappindicator3-devel
 BuildRequires: libgbm-devel
@@ -150,10 +150,10 @@ cmake_args=(
 )
 if [ "$ID" = "opensuse-leap" ]; then
   GCC_MAJOR=$(gcc -dumpfullversion | cut -d. -f1)
-  if [ "$GCC_MAJOR" -lt 14 ]; then
+  if [ "$GCC_MAJOR" -lt 15 ]; then
       cmake_args+=(
-        "-DCMAKE_C_COMPILER=gcc-14"
-        "-DCMAKE_CXX_COMPILER=g++-14"
+        "-DCMAKE_C_COMPILER=gcc-15"
+        "-DCMAKE_CXX_COMPILER=g++-15"
       )
   fi
 fi
