@@ -1,3 +1,4 @@
 .env
 rpmbuild/
 build/
+.micromamba
