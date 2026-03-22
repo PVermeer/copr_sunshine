@@ -48,8 +48,11 @@ BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
 %endif
 %if 0%{?suse_version}
+BuildRequires: gcc14
+BuildRequires: gcc14-c++
 BuildRequires: ninja
 BuildRequires: libappindicator3-devel
+BuildRequires: libgbm-devel
 BuildRequires: Mesa-libGL-devel
 BuildRequires: libminiupnpc-devel
 BuildRequires: libnuma-devel
@@ -124,10 +127,6 @@ export BRANCH=stable
 export BUILD_VERSION=%{version}
 export COMMIT=%{commit}
 
-if [ "$ID" = "opensuse-leap" ]; then
-  micromamba activate %{cudadir}
-fi
-
 cmake_args=(
   "-B=build"
   "-G=Ninja"
@@ -149,10 +148,18 @@ cmake_args=(
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
 )
+if [ "$ID" = "opensuse-leap" ]; then
+  GCC_MAJOR=$(gcc -dumpfullversion | cut -d. -f1)
+  if [ "$GCC_MAJOR" -lt 14 ]; then
+      cmake_args+=(
+        "-DCMAKE_C_COMPILER=gcc-14"
+        "-DCMAKE_CXX_COMPILER=g++-14"
+      )
+  fi
+fi
+
 cmake "${cmake_args[@]}"
 ninja -C "build"
-
-micromamba deactivate
 
 cd %{workdir}
 
