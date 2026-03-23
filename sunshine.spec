@@ -36,6 +36,7 @@ BuildRequires: nodejs
 BuildRequires: npm
 BuildRequires: libevdev-devel
 BuildRequires: libcap-devel
+BuildRequires: pipewire-devel
 # For tests ⤵
 BuildRequires: xorg-x11-server-Xvfb
 %if 0%{?fedora}
@@ -48,7 +49,6 @@ BuildRequires: miniupnpc-devel
 BuildRequires: numactl-devel
 BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
-BuildRequires: pipewire-devel
 %endif
 %if 0%{?suse_version}
 BuildRequires: gcc15
