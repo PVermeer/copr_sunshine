@@ -2,6 +2,10 @@
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
+%global build_version 2026.323.32542
+%global branch master
+%global commit d6bc76e3d4aa9bdacd13989acde452aae86dd4c3
+
 # Cross build issues
 %undefine _hardened_build
 %if 0%{?suse_version}
@@ -10,24 +14,12 @@
 %endif
 %endif
 
-# Source repo
-%global author LizardByte
-%global source Sunshine
-%global sourcerepo https://github.com/LizardByte/Sunshine
-%global branch master
-%global commit 86188d47a7463b0f73b35de18a628353adeaa20e
-%global versioncommit %(echo -n %{commit} | head -c 8)
-
-# Own copr repo
-%global coprrepo https://github.com/PVermeer/copr_sunshine
-%global coprsource copr_sunshine
-
-Name: sunshine
-Version: 2025.924.154138
-Release: 1.%{versioncommit}%{?dist}
-License: GPL-3.0 license
-Summary: Stable build of sunshine.
-Url: %{coprrepo}
+Name: Sunshine
+Version: %{build_version}
+Release: 1%{?dist}
+Summary: Self-hosted game stream host for Moonlight.
+License: GPLv3-only
+URL: https://github.com/LizardByte/Sunshine
 
 BuildRequires: git
 BuildRequires: cmake
@@ -56,6 +48,7 @@ BuildRequires: miniupnpc-devel
 BuildRequires: numactl-devel
 BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
+BuildRequires: pipewire-devel
 %endif
 %if 0%{?suse_version}
 BuildRequires: gcc15
@@ -74,22 +67,21 @@ BuildRequires: libpulse-devel
 %endif
 
 %description
-Stable build of sunshine.
+Self-hosted game stream host for Moonlight.
 
-%define workdir %{_builddir}/%{name}
-%define coprdir %{workdir}/%{coprsource}
-%define sourcedir %{workdir}/%{source}
+%define workdir %{_builddir}/source
+%define sourcedir %{workdir}/%{name}
 %define bindir %{_builddir}/bin
 %define cudadir %{_builddir}/cuda-env
 
 %prep
 mkdir -p %{bindir}
+mkdir -p %{workdir}
+mkdir -p %{sourcedir}
 export PATH=%{bindir}:$PATH
 
 # Install cuda compiler (nvcc) with micromamba (conda)
-RPM_ARCH=%{_arch}
-
-if [ "$RPM_ARCH" = "x86_64" ]; then
+if [ "%{_arch}" = "x86_64" ]; then
   curl -L --fail --retry 5 --retry-delay 2 \
   -o /tmp/micromamba.tar.bz2 \
     https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-linux-64.tar.bz2
@@ -100,44 +92,28 @@ else
 fi
 tar -xjf /tmp/micromamba.tar.bz2 -C /tmp
 install -Dm755 /tmp/bin/micromamba %{bindir}/micromamba
-
 micromamba create -y -p %{cudadir} cuda-nvcc
 
-# To apply working changes, handle sources / patches locally
-# COPR should clone the commited changes
+# Source
+cd %{workdir}
 %if 0%{?with_local}
-  # Get sources / patches - local build
-  mkdir -p %{coprdir}
-  cp -r %{_topdir}/SOURCES/* %{coprdir}
-
-  # Get source repo - local build
-  mkdir -p %{sourcedir}
-  cp -r %{_topdir}/SOURCES/Sunshine/. %{sourcedir}
-  cd %{sourcedir}
-  rm -rf .git
-  cd %{workdir}
+  mkdir -p %{workdir}
+  cp -r %{_topdir}/SOURCES/. %{workdir}
 %else
-  # Get sources / patches - COPR build
-  git clone --depth 1 %{coprrepo} %{coprdir}
-  cd %{coprdir}
-  rm -rf .git
-  cd %{workdir}
-
-  # Get source repo
-  git clone %{sourcerepo} %{sourcedir}
-  cd %{sourcedir}
-  git reset --hard %{commit}
-  git submodule update --recursive --init --depth 1
-  rm -rf .git
-  cd %{workdir}
+  git clone %{url} %{sourcedir}
 %endif
+cd %{sourcedir}
+git reset --hard %{commit}
+git submodule update --recursive --init --depth 1
+rm -rf .git
+cd %{workdir}
 
 %build
-source /etc/os-release
 cd %{sourcedir}
+source /etc/os-release
 
-export BRANCH=stable
-export BUILD_VERSION=%{version}
+export BRANCH=%{branch}
+export BUILD_VERSION=v%{build_version}
 export COMMIT=%{commit}
 
 cmake_args=(
@@ -171,8 +147,7 @@ if [ "$ID" = "opensuse-leap" ]; then
     )
   fi
   # Linking fails with libc symbol errors only on aarch64 (bug!?)
-  RPM_ARCH=%{_arch}
-  if [ "$RPM_ARCH" = "aarch64" ]; then
+  if [ "%{_arch}" = "aarch64" ]; then
     cmake_args+=(
       "-DCMAKE_CUDA_HOST_COMPILER=gcc-15"
     )
@@ -181,8 +156,6 @@ fi
 
 cmake "${cmake_args[@]}"
 make -j$(nproc) -C "%{sourcedir}/build"
-
-cd %{workdir}
 
 %install
 cd %{sourcedir}/build
@@ -207,11 +180,11 @@ udevadm trigger
 %files
 %caps(cap_sys_admin+p) %{_bindir}/sunshine
 %caps(cap_sys_admin+p) %{_bindir}/sunshine-*
-%{_userunitdir}/sunshine.service
+%{_userunitdir}/*.service
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
-%{_datadir}/icons/hicolor/scalable/apps/sunshine.svg
-%{_datadir}/icons/hicolor/scalable/status/sunshine*.svg
+%{_datadir}/icons/hicolor/scalable/apps/*.svg
+%{_datadir}/icons/hicolor/scalable/status/*.svg
 %{_datadir}/metainfo/*.metainfo.xml
 %{_datadir}/sunshine/**
