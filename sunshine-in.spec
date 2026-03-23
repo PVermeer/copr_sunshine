@@ -2,9 +2,9 @@
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
-%global build_version 2025.924.154138
-%global branch master
-%global commit 86188d47a7463b0f73b35de18a628353adeaa20e
+%global build_version 0
+%global branch 0
+%global commit 0
 
 # Cross build issues
 %undefine _hardened_build
