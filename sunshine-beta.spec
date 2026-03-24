@@ -1,10 +1,12 @@
+# ONLY MAKE CHANGES TO: sunshine.in.spec!
+
 # Create an option to build locally without fetchting own repo
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
-%global build_version 2026.323.32542
+%global build_version 2026.323.224448
 %global branch master
-%global commit d6bc76e3d4aa9bdacd13989acde452aae86dd4c3
+%global commit 4126e18f20eda8d61a92f51caf8cb6125435b68e
 
 # Cross build issues
 %undefine _hardened_build
