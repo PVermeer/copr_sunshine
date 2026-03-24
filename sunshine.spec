@@ -122,7 +122,7 @@ cmake_args=(
   "-G=Unix Makefiles"
   "-S=."
   "-DBUILD_DOCS=OFF"
-  "-DBUILD_TESTS=OFF"
+  "-DBUILD_TESTS=ON"
   "-DBUILD_WERROR=OFF"
   "-DCMAKE_BUILD_TYPE=Release"
   "-DCMAKE_INSTALL_PREFIX=%{_prefix}"
@@ -167,6 +167,9 @@ cd %{sourcedir}/build
 appstreamcli validate %{buildroot}%{_metainfodir}/*.metainfo.xml
 appstream-util validate %{buildroot}%{_metainfodir}/*.metainfo.xml
 desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
+
+cd %{sourcedir}/build/
+xvfb-run ./tests/test_sunshine || true
 
 %post
 modprobe uhid

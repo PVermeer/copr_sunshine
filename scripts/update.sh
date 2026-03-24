@@ -191,7 +191,7 @@ status_file="$XDG_RUNTIME_DIR/update-vars"
 echo "Writing status to $status_file"
 
 touch "$status_file"
-echo "RPM_SPEC_UPDATE=$RPM_SPEC_UPDATE" >>"$status_file"
+echo "RPM_SPEC_UPDATE=$RPM_SPEC_UPDATE" >"$status_file"
 
 echo ""
 echo_success "Wrote to status file >> $status_file:"
