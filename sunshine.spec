@@ -1,3 +1,5 @@
+# ONLY MAKE CHANGES TO: sunshine.in.spec!
+
 # Create an option to build locally without fetchting own repo
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
