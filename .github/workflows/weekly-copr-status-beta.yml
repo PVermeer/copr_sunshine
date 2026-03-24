@@ -1,0 +1,15 @@
+name: Weekly COPR status beta
+
+on:
+  schedule:
+    - cron: "00 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  COPR_build_status:
+    uses: pvermeer/rpm-tools/.github/workflows/copr-status.yml@main
+    with:
+      spec_file: ./sunshine-beta.spec
+      copr_owner: pvermeer
+      copr_project: sunshine-test
+      copr_package: sunshine-beta
