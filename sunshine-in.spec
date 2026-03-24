@@ -107,7 +107,6 @@ cd %{workdir}
 cd %{sourcedir}
 git reset --hard %{commit}
 git submodule update --recursive --init --depth 1
-rm -rf .git
 cd %{workdir}
 
 %build
