@@ -81,7 +81,7 @@ BuildRequires: libpulse-devel
 Self-hosted game stream host for Moonlight.
 
 %define workdir %{_builddir}/source
-%define sourcedir %{workdir}/%{name}
+%define sourcedir %{workdir}/Sunshine
 %define bindir %{_builddir}/bin
 %define cudadir %{_builddir}/cuda-env
 
