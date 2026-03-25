@@ -7,6 +7,7 @@
 %global build_version 0
 %global branch 0
 %global commit 0
+%global release_type 0
 
 # Cross build issues
 %undefine _hardened_build
@@ -16,7 +17,15 @@
 %endif
 %endif
 
-Name: Sunshine
+%if "%{release_type}" == "stable"
+Name: sunshine
+Conflicts: sunshine-beta
+%endif
+%if "%{release_type}" == "beta"
+Name: sunshine-beta
+Conflicts: sunshine
+%endif
+
 Version: %{build_version}
 Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.

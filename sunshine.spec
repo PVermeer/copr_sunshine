@@ -7,6 +7,7 @@
 %global build_version 2025.924.154138
 %global branch master
 %global commit 86188d47a7463b0f73b35de18a628353adeaa20e
+%global release_type stable
 
 # Cross build issues
 %undefine _hardened_build
@@ -16,7 +17,15 @@
 %endif
 %endif
 
-Name: Sunshine
+%if "%{release_type}" == "stable"
+Name: sunshine
+Conflicts: sunshine-beta
+%endif
+%if "%{release_type}" == "beta"
+Name: sunshine-beta
+Conflicts: sunshine
+%endif
+
 Version: %{build_version}
 Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.

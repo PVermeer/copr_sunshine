@@ -14,8 +14,8 @@ else
 fi
 
 release_type=$1
-if [ ! "$release_type" = "stable" ] && [ ! "$release_type" = "beta" ]; then
-  echo_error "Please add parameter \"stable\" or \"beta\""
+if [ ! "$release_type" = "stable" ] && [ ! "$release_type" = "beta" ] && [ ! "$release_type" = "all" ]; then
+  echo_error "Please add parameter \"stable\", \"beta\" or \"all\""
 fi
 
 TEMP_DIR=$XDG_RUNTIME_DIR
@@ -113,6 +113,7 @@ update_spec_file() {
   local keyValue
   for keyValue in $global_spec_vars; do
     local key
+    local value
     key=$(get_key "$keyValue")
     value=$(get_value "$keyValue")
 
@@ -163,6 +164,9 @@ update_spec_file() {
       sed -i "s/%global\s$key\s.*/%global $key $branch/" "./${output_spec_file}"
     fi
 
+    if [ "$key" = "release_type" ]; then
+      sed -i "s/%global\s$key\s.*/%global $key $release_type/" "./${output_spec_file}"
+    fi
   done
 
   if [ "$RPM_SPEC_UPDATE" = "true" ]; then
@@ -170,30 +174,54 @@ update_spec_file() {
   fi
 }
 
-echo_color "\n=== Update RPM ==="
-
-spec_file=""
-if [ "$release_type" = "stable" ]; then
-  spec_file="./sunshine.spec"
-elif [ "$release_type" = "beta" ]; then
-  spec_file="./sunshine-beta.spec"
+update_rpm_releases=("$release_type")
+if [ "$release_type" = "all" ]; then
+  update_rpm_releases=("stable" "beta")
 fi
 
-cp "$spec_file" "$TEMP_DIR"
-current_spec_file="$TEMP_DIR/$spec_file"
-cp "./sunshine-in.spec" "$spec_file"
-update_spec_file "$current_spec_file" "$spec_file" "$release_type"
+for release_type in "${update_rpm_releases[@]}"; do
 
-# Update status for rpm-tools
-echo ""
-echo_color "=== Exporting status ==="
-status_file="$XDG_RUNTIME_DIR/update-vars"
-echo "Writing status to $status_file"
+  echo_color "\n=== Update RPM for $release_type ==="
 
-touch "$status_file"
-echo "RPM_SPEC_UPDATE=$RPM_SPEC_UPDATE" >"$status_file"
+  spec_file=""
+  if [ "$release_type" = "stable" ]; then
+    spec_file="./sunshine.spec"
+  elif [ "$release_type" = "beta" ]; then
+    spec_file="./sunshine-beta.spec"
+  fi
 
-echo ""
-echo_success "Wrote to status file >> $status_file:"
-cat "$status_file"
-echo ""
+  cp "$spec_file" "$TEMP_DIR"
+  current_spec_file="$TEMP_DIR/$spec_file"
+  cp "./sunshine-in.spec" "$spec_file"
+  update_spec_file "$current_spec_file" "$spec_file" "$release_type"
+
+  # Check
+  global_spec_vars=$(get_global_vars_from_spec "$spec_file")
+  for keyValue in $global_spec_vars; do
+    value=$(get_value "$keyValue")
+    if [ "$value" = "0" ]; then
+      # Redo if zero, dirty fix for new keys
+      echo ""
+      echo_warning "Keys has been added to in spec, redo update"
+      echo ""
+      cp "$spec_file" "$TEMP_DIR"
+      update_spec_file "$current_spec_file" "$spec_file" "$release_type"
+      break
+    fi
+  done
+
+  # Update status for rpm-tools
+  echo ""
+  echo_color "=== Exporting status ==="
+  status_file="$XDG_RUNTIME_DIR/update-vars"
+  echo "Writing status to $status_file"
+
+  touch "$status_file"
+  echo "RPM_SPEC_UPDATE=$RPM_SPEC_UPDATE" >"$status_file"
+
+  echo ""
+  echo_success "Wrote to status file >> $status_file:"
+  cat "$status_file"
+  echo ""
+
+done
