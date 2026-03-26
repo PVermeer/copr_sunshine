@@ -48,6 +48,7 @@ BuildRequires: nodejs
 BuildRequires: npm
 BuildRequires: openssl-devel
 BuildRequires: pipewire-devel
+BuildRequires: systemd-rpm-macros
 # For tests ⤵
 BuildRequires: xorg-x11-server-Xvfb
 %if 0%{?fedora}
