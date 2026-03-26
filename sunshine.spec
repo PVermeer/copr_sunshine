@@ -25,56 +25,56 @@ Conflicts: sunshine-beta
 Name: sunshine-beta
 Conflicts: sunshine
 %endif
-
 Version: %{build_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: https://github.com/LizardByte/Sunshine
 
-BuildRequires: git
 BuildRequires: cmake
+BuildRequires: curl
+BuildRequires: desktop-file-utils
 BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: desktop-file-utils
-BuildRequires: curl
-BuildRequires: openssl-devel
+BuildRequires: git
+BuildRequires: libcap-devel
 BuildRequires: libcurl-devel
 BuildRequires: libdrm-devel
-BuildRequires: libva-devel
+BuildRequires: libevdev-devel
 BuildRequires: libnotify-devel
+BuildRequires: libva-devel
 BuildRequires: nodejs
 BuildRequires: npm
-BuildRequires: libevdev-devel
-BuildRequires: libcap-devel
+BuildRequires: openssl-devel
 BuildRequires: pipewire-devel
+BuildRequires: systemd-rpm-macros
 # For tests ⤵
 BuildRequires: xorg-x11-server-Xvfb
 %if 0%{?fedora}
-BuildRequires: systemd-udev
 BuildRequires: appstream
-BuildRequires: libappstream-glib
 BuildRequires: libappindicator-gtk3-devel
+BuildRequires: libappstream-glib
 BuildRequires: mesa-libgbm-devel
 BuildRequires: miniupnpc-devel
 BuildRequires: numactl-devel
 BuildRequires: opus-devel
 BuildRequires: pulseaudio-libs-devel
+BuildRequires: systemd-udev
 %endif
 %if 0%{?suse_version}
-BuildRequires: gcc15
-BuildRequires: gcc15-c++
-BuildRequires: systemd
-BuildRequires: udev
 BuildRequires: AppStream
 BuildRequires: appstream-glib
+BuildRequires: gcc15
+BuildRequires: gcc15-c++
 BuildRequires: libappindicator3-devel
 BuildRequires: libgbm-devel
-BuildRequires: Mesa-libGL-devel
 BuildRequires: libminiupnpc-devel
 BuildRequires: libnuma-devel
 BuildRequires: libopus-devel
 BuildRequires: libpulse-devel
+BuildRequires: Mesa-libGL-devel
+BuildRequires: systemd
+BuildRequires: udev
 %endif
 
 %description
@@ -181,12 +181,12 @@ cd %{sourcedir}/build/
 xvfb-run ./tests/test_sunshine || true
 
 %post
-modprobe uhid
-%udev_reload_rules
-udevadm trigger
+modprobe uhid || true
+udevadm control --reload-rules || true
+udevadm trigger || true
 
 %postun
-%udev_reload_rules
+udevadm control --reload-rules || true
 
 %files
 %caps(cap_sys_admin+p) %{_bindir}/sunshine

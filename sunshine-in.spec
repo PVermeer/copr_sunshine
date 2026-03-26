@@ -25,9 +25,8 @@ Conflicts: sunshine-beta
 Name: sunshine-beta
 Conflicts: sunshine
 %endif
-
 Version: %{build_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: https://github.com/LizardByte/Sunshine
