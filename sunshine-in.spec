@@ -182,12 +182,12 @@ cd %{sourcedir}/build/
 xvfb-run ./tests/test_sunshine || true
 
 %post
-modprobe uhid
-%udev_reload_rules
-udevadm trigger
+modprobe uhid || true
+udevadm control --reload-rules || true
+udevadm trigger || true
 
 %postun
-%udev_reload_rules
+udevadm control --reload-rules || true
 
 %files
 %caps(cap_sys_admin+p) %{_bindir}/sunshine
