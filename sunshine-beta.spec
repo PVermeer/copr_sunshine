@@ -189,8 +189,8 @@ udevadm trigger || true
 udevadm control --reload-rules || true
 
 %files
-%caps(cap_sys_admin+p) %{_bindir}/sunshine
-%caps(cap_sys_admin+p) %{_bindir}/sunshine-*
+%caps(cap_sys_admin,cap_sys_nice+p) %{_bindir}/sunshine
+%caps(cap_sys_admin,cap_sys_nice+p) %{_bindir}/sunshine-*
 %{_userunitdir}/*.service
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
