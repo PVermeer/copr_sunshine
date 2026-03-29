@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Dev
-sudo dnf install -y cmake ninja-build gcc g++ mesa-libgbm-devel libappindicator-gtk3-devel openssl-devel libcurl-devel miniupnpc-devel libdrm-devel libva-devel libnotify-devel nodejs npm libevdev-devel opus-devel pulseaudio-libs-devel numactl-devel libcap-devel xorg-x11-server-Xvfb appstream desktop-file-utils pipewire-devel
+sudo dnf install -y cmake ninja-build gcc g++ mesa-libgbm-devel libappindicator-gtk3-devel openssl-devel libcurl-devel miniupnpc-devel libdrm-devel libva-devel libnotify-devel nodejs npm libevdev-devel opus-devel pulseaudio-libs-devel numactl-devel libcap-devel pipewire-devel
 
 # External dev
 curl -L --fail --retry 5 --retry-delay 2 \
