@@ -38,8 +38,8 @@ BuildRequires: libdrm-devel
 BuildRequires: libevdev-devel
 BuildRequires: libnotify-devel
 BuildRequires: libva-devel
-BuildRequires: micromamba
 BuildRequires: mesa-libgbm-devel
+BuildRequires: micromamba
 BuildRequires: miniupnpc-devel
 BuildRequires: nodejs
 BuildRequires: npm
