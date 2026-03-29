@@ -14,8 +14,8 @@ if [ -n "$1" ]; then
     fi
 fi
 
-fedora_versions=("41" "42" "43" "44" "rawhide")
-build_types=("stable ""beta")
+fedora_versions=("42" "43" "44" "rawhide")
+build_types=("stable" "beta")
 docker_images=()
 has_failed="false"
 failed_versions=()

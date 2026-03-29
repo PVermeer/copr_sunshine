@@ -13,8 +13,7 @@ WORKDIR ${WORK_DIR}
 RUN dnf install -y git
 
 RUN git clone https://github.com/PVermeer/rpm-tools.git
-RUN git clone --recurse-submodules --depth 1 --shallow-submodules https://github.com/LizardByte/Sunshine.git
-RUN git -C ./Sunshine fetch --all --tags --prune --no-recurse-submodules
+RUN git clone https://github.com/LizardByte/Sunshine.git
 
 FROM fedora:${TAG} AS init
 ARG WORK_DIR
