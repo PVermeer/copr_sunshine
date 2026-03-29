@@ -103,7 +103,7 @@ else
 fi
 tar -xjf /tmp/micromamba.tar.bz2 -C /tmp
 install -Dm755 /tmp/bin/micromamba %{bindir}/micromamba
-micromamba create -y -p %{cudadir} cuda-nvcc
+micromamba create -y -p %{cudadir} nvidia::cuda-nvcc
 
 # Source
 cd %{workdir}
