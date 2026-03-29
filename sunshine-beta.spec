@@ -38,6 +38,7 @@ BuildRequires: libdrm-devel
 BuildRequires: libevdev-devel
 BuildRequires: libnotify-devel
 BuildRequires: libva-devel
+BuildRequires: mamba
 BuildRequires: mesa-libgbm-devel
 BuildRequires: miniupnpc-devel
 BuildRequires: nodejs
@@ -64,19 +65,8 @@ mkdir -p %{workdir}
 mkdir -p %{sourcedir}
 export PATH=%{bindir}:$PATH
 
-# Install cuda compiler (nvcc) with micromamba (conda)
-if [ "%{_arch}" = "x86_64" ]; then
-  curl -L --fail --retry 5 --retry-delay 2 \
-  -o /tmp/micromamba.tar.bz2 \
-    https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-linux-64.tar.bz2
-else
-  curl -L --fail --retry 5 --retry-delay 2 \
-  -o /tmp/micromamba.tar.bz2 \
-    https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-linux-%{_arch}.tar.bz2
-fi
-tar -xjf /tmp/micromamba.tar.bz2 -C /tmp
-install -Dm755 /tmp/bin/micromamba %{bindir}/micromamba
-micromamba create -y -p %{cudadir} nvidia::cuda-nvcc
+# Install cuda compiler (nvcc) with mamba (Anaconda packages)
+mamba create -y -p %{cudadir} nvidia::cuda-nvcc
 
 # Source
 cd %{workdir}
