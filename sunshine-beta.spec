@@ -66,7 +66,7 @@ mkdir -p %{sourcedir}
 export PATH=%{bindir}:$PATH
 
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
-micromamba create -y -p %{cudadir} nvidia::cuda-nvcc
+micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
 
 # Source
 cd %{workdir}
