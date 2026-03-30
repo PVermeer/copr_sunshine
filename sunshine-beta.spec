@@ -4,9 +4,9 @@
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
-%global build_version 2026.323.224448
+%global build_version 2026.329.165800
 %global branch master
-%global commit 4126e18f20eda8d61a92f51caf8cb6125435b68e
+%global commit d03334693c5cbdfba51d7835d7b389b28e4c79d4
 %global release_type beta
 
 # Issues ⤵
