@@ -145,7 +145,6 @@ update_spec_file() {
       current_commit=$value
       new_commit=$(get_commit_from_tag "$repo_url" "$release_tag")
 
-      echo ""
       echo_color -n "$key:"
       echo " $current_commit -> $new_commit"
 
@@ -170,6 +169,7 @@ update_spec_file() {
   done
 
   if [ "$RPM_SPEC_UPDATE" = "true" ]; then
+    echo ""
     echo_success "Updated: $output_spec_file"
   fi
 }
@@ -201,9 +201,7 @@ for release_type in "${update_rpm_releases[@]}"; do
     value=$(get_value "$keyValue")
     if [ "$value" = "0" ]; then
       # Redo if zero, dirty fix for new keys
-      echo ""
-      echo_warning "Keys has been added to in spec, redo update"
-      echo ""
+      echo_warning "Global variables have been added to in spec, re-running update"
       cp "$spec_file" "$TEMP_DIR"
       update_spec_file "$current_spec_file" "$spec_file" "$release_type"
       break
