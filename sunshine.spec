@@ -4,27 +4,35 @@
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
-%global build_version 2025.924.154138
-%global branch master
+# Source repo 1
+%global author LizardByte
+%global source Sunshine
+%global sourcerepo https://github.com/LizardByte/Sunshine
+%global tag v2025.924.154138
 %global commit 86188d47a7463b0f73b35de18a628353adeaa20e
-%global release_type stable
+%global version 2025.924.154138
+%global releasetype stable
+
+# Own copr repo
+%global coprrepo https://github.com/pvermeer/rpm-tools
+%global coprsource rpm-tools
 
 # Issues ⤵
 %undefine _hardened_build
 
-%if "%{release_type}" == "stable"
+%if "%{releasetype}" == "stable"
 Name: sunshine
 Conflicts: sunshine-beta
 %endif
-%if "%{release_type}" == "beta"
+%if "%{releasetype}" == "beta"
 Name: sunshine-beta
 Conflicts: sunshine
 %endif
-Version: %{build_version}
-Release: 2%{?dist}
+Version: %{version}
+Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
-URL: https://github.com/LizardByte/Sunshine
+URL: %{coprrepo}
 
 BuildRequires: cmake
 BuildRequires: curl
@@ -54,39 +62,46 @@ BuildRequires: systemd-udev
 %description
 Self-hosted game stream host for Moonlight.
 
-%define workdir %{_builddir}/source
-%define sourcedir %{workdir}/Sunshine
+%define sourcesdir %{_builddir}/source
+%define coprdir %{sourcesdir}/%{coprsource}
+%define sourcedir %{sourcesdir}/%{source}
 %define bindir %{_builddir}/bin
 %define cudadir %{_builddir}/cuda-env
 
 %prep
 mkdir -p %{bindir}
-mkdir -p %{workdir}
-mkdir -p %{sourcedir}
 export PATH=%{bindir}:$PATH
 
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
 
-# Source
-cd %{workdir}
+# To apply working changes handle sources / patches with local changes.
+# COPR should clone the commited changes.
 %if 0%{?with_local}
-  mkdir -p %{workdir}
-  cp -r %{_topdir}/SOURCES/. %{workdir}
+  mkdir -p %{coprdir}
+  cp -r %{_topdir}/SOURCES/. %{coprdir}
 %else
-  git clone %{url} %{sourcedir}
+  git clone %{coprrepo} --depth=1 --no-checkout %{coprdir}
+  cd %{coprdir}
+  git fetch --depth=1 origin
+  git reset --hard origin
+  cd %{_builddir}
 %endif
+
+git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
+
 cd %{sourcedir}
+git fetch --depth=1 origin %{commit}
 git reset --hard %{commit}
-git submodule update --recursive --init --depth 1
-cd %{workdir}
+git submodule update --init --depth 1 --recursive
+cd %{_builddir}
 
 %build
 cd %{sourcedir}
 source /etc/os-release
 
-export BRANCH=%{branch}
-export BUILD_VERSION=v%{build_version}
+export BRANCH=master
+export BUILD_VERSION=v%{version}
 export COMMIT=%{commit}
 
 cmake_args=(

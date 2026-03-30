@@ -16,6 +16,7 @@ fi
 release_type=$1
 if [ ! "$release_type" = "stable" ] && [ ! "$release_type" = "beta" ] && [ ! "$release_type" = "all" ]; then
   echo_error "Please add parameter \"stable\", \"beta\" or \"all\""
+  exit 1
 fi
 
 TEMP_DIR=$XDG_RUNTIME_DIR
@@ -25,6 +26,29 @@ fi
 mkdir -p "$TEMP_DIR/copr_sunshine"
 TEMP_DIR="$TEMP_DIR/copr_sunshine"
 export RPM_SPEC_UPDATE="false"
+
+get_global_vars_from_spec() {
+  local spec_file=$1
+  grep '^%global\s.*$' "$spec_file" | awk '{ print $2"="$3 }'
+}
+
+get_key() {
+  echo "$1" | awk -F '=' '{ print $1 }'
+}
+get_value() {
+  echo "$1" | awk -F '=' '{ print $2 }'
+}
+
+get_repo_url_from_spec() {
+  local spec_file=$1
+  local sourcerepo_keyvalue
+  local url
+
+  sourcerepo_keyvalue=$(grep '^%global sourcerepo\s.*$' "$spec_file" | awk '{ print $2"="$3 }')
+  url=$(get_value "$sourcerepo_keyvalue")
+
+  echo "$url"
+}
 
 get_tag_by_release() {
   local repo
@@ -71,26 +95,6 @@ get_commit_from_tag() {
   echo "$commit"
 }
 
-get_global_vars_from_spec() {
-  local spec_file=$1
-  grep '^%global\s.*$' "$spec_file" | awk '{ print $2"="$3 }'
-}
-
-get_repo_url_from_spec() {
-  local spec_file=$1
-  local url
-  url=$(grep '^URL:\s.*$' "$spec_file" | awk '{ print $2 }')
-
-  echo "$url"
-}
-
-get_key() {
-  echo "$1" | awk -F '=' '{ print $1 }'
-}
-get_value() {
-  echo "$1" | awk -F '=' '{ print $2 }'
-}
-
 update_spec_file() {
   local input_spec_file
   local output_spec_file
@@ -117,7 +121,7 @@ update_spec_file() {
     key=$(get_key "$keyValue")
     value=$(get_value "$keyValue")
 
-    if [ "$key" = "build_version" ]; then
+    if [ "$key" = "version" ]; then
       local current_version
       local new_version
 
@@ -158,13 +162,12 @@ update_spec_file() {
       sed -i "s/%global\s$key\s.*/%global $key $new_commit/" "./${output_spec_file}"
     fi
 
-    if [ "$key" = "branch" ]; then
-      local branch="master"
-      sed -i "s/%global\s$key\s.*/%global $key $branch/" "./${output_spec_file}"
+    if [ "$key" = "releasetype" ]; then
+      sed -i "s/%global\s$key\s.*/%global $key $release_type/" "./${output_spec_file}"
     fi
 
-    if [ "$key" = "release_type" ]; then
-      sed -i "s/%global\s$key\s.*/%global $key $release_type/" "./${output_spec_file}"
+    if [ "$key" = "tag" ]; then
+      sed -i "s/%global\s$key\s.*/%global $key $release_tag/" "./${output_spec_file}"
     fi
   done
 
