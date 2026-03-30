@@ -4,7 +4,7 @@
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
-# Source repo 1
+# Source repo
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
@@ -14,8 +14,8 @@
 %global releasetype 0
 
 # Own copr repo
-%global coprrepo https://github.com/pvermeer/rpm-tools
-%global coprsource rpm-tools
+%global coprrepo https://github.com/PVermeer/copr_sunshine
+%global coprsource copr_sunshine
 
 # Issues ⤵
 %undefine _hardened_build
@@ -81,11 +81,7 @@ micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
   mkdir -p %{coprdir}
   cp -r %{_topdir}/SOURCES/. %{coprdir}
 %else
-  git clone %{coprrepo} --depth=1 --no-checkout %{coprdir}
-  cd %{coprdir}
-  git fetch --depth=1 origin
-  git reset --hard origin
-  cd %{_builddir}
+  git clone %{coprrepo} --depth=1 %{coprdir}
 %endif
 
 git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
