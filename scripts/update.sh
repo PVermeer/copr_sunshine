@@ -18,6 +18,10 @@ if [ ! "$release_type" = "stable" ] && [ ! "$release_type" = "beta" ] && [ ! "$r
   echo_error "Please add parameter \"stable\", \"beta\" or \"all\""
   exit 1
 fi
+disable_version_update="false"
+if [ "$2" = "--no-version-update" ]; then
+  disable_version_update="true"
+fi
 
 TEMP_DIR=$XDG_RUNTIME_DIR
 if [ -z "$TEMP_DIR" ]; then
@@ -139,6 +143,11 @@ update_spec_file() {
         RPM_SPEC_UPDATE="true"
       fi
 
+      if [ "$disable_version_update" = "true" ]; then
+        echo_warning "Version update is disabled"
+        new_version=$current_version
+      fi
+
       sed -i "s/%global\s$key\s.*/%global $key $new_version/" "./${output_spec_file}"
     fi
 
@@ -159,6 +168,11 @@ update_spec_file() {
         RPM_SPEC_UPDATE="true"
       fi
 
+      if [ "$disable_version_update" = "true" ]; then
+        echo_warning "Version update is disabled"
+        new_commit=$current_commit
+      fi
+
       sed -i "s/%global\s$key\s.*/%global $key $new_commit/" "./${output_spec_file}"
     fi
 
@@ -167,7 +181,16 @@ update_spec_file() {
     fi
 
     if [ "$key" = "tag" ]; then
-      sed -i "s/%global\s$key\s.*/%global $key $release_tag/" "./${output_spec_file}"
+      local set_tag
+      local current_tag
+
+      set_tag=$release_tag
+      current_tag=$value
+
+      if [ "$disable_version_update" = "true" ]; then
+        set_tag=$current_tag
+      fi
+        sed -i "s/%global\s$key\s.*/%global $key $set_tag/" "./${output_spec_file}"
     fi
   done
 
