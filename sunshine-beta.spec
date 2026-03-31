@@ -4,18 +4,14 @@
 # for sourcing and patching
 %{!?with_local:%global with_local 0}
 
-# Source repo 1
+# Source repo
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2026.329.165800
-%global commit d03334693c5cbdfba51d7835d7b389b28e4c79d4
-%global version 2026.329.165800
+%global tag v2026.331.21700
+%global commit 0752f641b16ae62706f6b4df13ad00966fa40345
+%global version 2026.331.21700
 %global releasetype beta
-
-# Own copr repo
-%global coprrepo https://github.com/PVermeer/copr_sunshine
-%global coprsource copr_sunshine
 
 # Issues ⤵
 %undefine _hardened_build
@@ -74,15 +70,6 @@ export PATH=%{bindir}:$PATH
 
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
-
-# To apply working changes handle sources / patches with local changes.
-# COPR should clone the commited changes.
-%if 0%{?with_local}
-  mkdir -p %{coprdir}
-  cp -r %{_topdir}/SOURCES/. %{coprdir}
-%else
-  git clone %{coprrepo} --depth=1 %{coprdir}
-%endif
 
 git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
 

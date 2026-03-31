@@ -13,10 +13,6 @@
 %global version 0
 %global releasetype 0
 
-# Own copr repo
-%global coprrepo https://github.com/PVermeer/copr_sunshine
-%global coprsource copr_sunshine
-
 # Issues ⤵
 %undefine _hardened_build
 
@@ -74,15 +70,6 @@ export PATH=%{bindir}:$PATH
 
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
-
-# To apply working changes handle sources / patches with local changes.
-# COPR should clone the commited changes.
-%if 0%{?with_local}
-  mkdir -p %{coprdir}
-  cp -r %{_topdir}/SOURCES/. %{coprdir}
-%else
-  git clone %{coprrepo} --depth=1 %{coprdir}
-%endif
 
 git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
 
