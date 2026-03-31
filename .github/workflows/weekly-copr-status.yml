@@ -11,5 +11,5 @@ jobs:
     with:
       spec_file: ./sunshine.spec
       copr_owner: pvermeer
-      copr_project: sunshine-test
+      copr_project: sunshine
       copr_package: sunshine

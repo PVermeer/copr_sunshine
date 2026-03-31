@@ -16,7 +16,7 @@ jobs:
       CI: "true"
       SPEC_FILE: ./sunshine-beta.spec
       COPR_OWNER: pvermeer
-      COPR_PROJECT: sunshine-test
+      COPR_PROJECT: sunshine
       COPR_PACKAGE: sunshine-beta
       COPR_WEBHOOK: ${{ secrets.COPR_WEBHOOK_BETA }}
       RPM_SPEC_UPDATE: "false"

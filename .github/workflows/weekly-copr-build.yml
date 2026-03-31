@@ -16,7 +16,7 @@ jobs:
       CI: "true"
       SPEC_FILE: ./sunshine.spec
       COPR_OWNER: pvermeer
-      COPR_PROJECT: sunshine-test
+      COPR_PROJECT: sunshine
       COPR_PACKAGE: sunshine
       COPR_WEBHOOK: ${{ secrets.COPR_WEBHOOK }}
       RPM_SPEC_UPDATE: "false"
@@ -45,26 +45,13 @@ jobs:
           source $XDG_RUNTIME_DIR/update-vars
           echo "RPM_SPEC_UPDATE=$RPM_SPEC_UPDATE" >> $GITHUB_ENV
 
-      - name: Check COPR status
+      - name: Check for changes
+        if: ${{ env.RPM_SPEC_UPDATE == 'true' || env.COPR_STATUS == 'forked' }}
         run: |
-          cd repo
-          ../rpm-tools/rpm-tool copr-status --disable-self-update --check-forked || true
-          source $XDG_RUNTIME_DIR/rpm-tool-vars
-          echo "COPR_STATUS=$COPR_STATUS" >> $GITHUB_ENV
-
-      - name: Commit changes
-        if: ${{ env.RPM_SPEC_UPDATE == 'true' }}
-        run: |
-          cd repo
-          git config --local user.email "action@github.com"
-          git config --local user.name "CI"
-          git --no-pager diff --color=always
-          echo ""
-          git commit -a -m "build(github-actions): automated update [skip ci]" || true
-          git push
-
-      - name: Build on COPR
-        if: ${{ env.RPM_SPEC_UPDATE == 'true' || env.COPR_STATUS == 'failed' || env.COPR_STATUS == 'forked' }}
-        run: |
-          cd repo
-          ../rpm-tools/rpm-tool copr-build --disable-self-update
+          if [ "RPM_SPEC_UPDATE" = "true" ]; then
+            echo "A new stable version of Sunshine has been released"
+          fi
+          if [ "COPR_STATUS" = "true" ]; then
+            echo "Fedora has been forked, new build needed"
+          fi
+          exit 1
