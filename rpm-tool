@@ -3,6 +3,8 @@
 set -e
 set -o pipefail
 
+source "./.env"
+
 trap 'kill 0' INT TERM
 
 ./scripts/update.sh all --no-version-update
@@ -26,13 +28,15 @@ if [ "$1" = "--copr-all-test" ]; then
         --copr-owner="$COPR_OWNER" \
         --copr-project="sunshine-test" \
         --copr-package="sunshine" \
+        --copr-watch \
         &
     ./rpm-tools/rpm-tool copr-build \
         --spec-file="./sunshine-beta.spec" \
         --copr-webhook="$COPR_WEBHOOK"/sunshine-beta \
         --copr-owner="$COPR_OWNER" \
         --copr-project="sunshine-test" \
-        --copr-package="sunshine-beta"
+        --copr-package="sunshine-beta" \
+        --copr-watch
 
     wait
     exit 0
@@ -50,13 +54,15 @@ if [ "$1" = "--copr-all-live" ]; then
         --copr-owner="$COPR_OWNER" \
         --copr-project="sunshine" \
         --copr-package="sunshine" \
+        --copr-watch \
         &
     ./rpm-tools/rpm-tool copr-build \
         --spec-file="./sunshine-beta.spec" \
         --copr-webhook="$COPR_WEBHOOK"/sunshine-beta \
         --copr-owner="$COPR_OWNER" \
         --copr-project="sunshine" \
-        --copr-package="sunshine-beta"
+        --copr-package="sunshine-beta" \
+        --copr-watch
 
     wait
     exit 0
