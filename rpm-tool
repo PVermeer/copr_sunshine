@@ -6,6 +6,7 @@ set -o pipefail
 source "./.env"
 trap 'kill 0' INT TERM
 
+source ./rpm-tools/scripts/bash-color.sh
 ./scripts/update.sh all --no-version-update
 
 if [ "$1" = "--local-all" ]; then
@@ -17,7 +18,7 @@ fi
 
 if [ "$1" = "--copr-all-test" ]; then
     if [ "$IS_LIVE" = "true" ]; then
-        echo "Live COPR_WEBHOOK is enabled in .env !!!"
+        echo_error "Live COPR_WEBHOOK is enabled in .env !!!"
         exit 1
     fi
 
@@ -43,7 +44,7 @@ fi
 
 if [ "$1" = "--copr-all-live" ]; then
     if [ ! "$IS_LIVE" = "true" ]; then
-        echo "Live COPR_WEBHOOK is not enabled in .env"
+        echo_error "Live COPR_WEBHOOK is not enabled in .env"
         exit 1
     fi
 
