@@ -54,6 +54,8 @@ BuildRequires: pipewire-devel
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: systemd-rpm-macros
 BuildRequires: systemd-udev
+BuildRequires: vulkan-devel
+BuildRequires: glslc
 
 %description
 Self-hosted game stream host for Moonlight.
@@ -108,6 +110,7 @@ cmake_args=(
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
+  "-DSUNSHINE_ENABLE_VULKAN=ON"
 )
 cmake "${cmake_args[@]}"
 make -j$(nproc) -C "%{sourcedir}/build"
