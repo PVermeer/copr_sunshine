@@ -3,6 +3,63 @@
 set -e
 set -o pipefail
 
+trap 'kill 0' INT TERM
+
 ./scripts/update.sh all --no-version-update
+
+if [ "$1" = "--local-all" ]; then
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec"
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec"
+
+    exit 0
+fi
+
+if [ "$1" = "--copr-all-test" ]; then
+    if [ "$IS_LIVE" = "true" ]; then
+        echo "Live COPR_WEBHOOK is enabled in .env !!!"
+        exit 1
+    fi
+
+    ./rpm-tools/rpm-tool copr-build \
+        --spec-file="./sunshine.spec" \
+        --copr-webhook="$COPR_WEBHOOK"/sunshine \
+        --copr-owner="$COPR_OWNER" \
+        --copr-project="sunshine-test" \
+        --copr-package="sunshine" \
+        &
+    ./rpm-tools/rpm-tool copr-build \
+        --spec-file="./sunshine-beta.spec" \
+        --copr-webhook="$COPR_WEBHOOK"/sunshine-beta \
+        --copr-owner="$COPR_OWNER" \
+        --copr-project="sunshine-test" \
+        --copr-package="sunshine-beta"
+
+    wait
+    exit 0
+fi
+
+if [ "$1" = "--copr-all-live" ]; then
+    if [ ! "$IS_LIVE" = "true" ]; then
+        echo "Live COPR_WEBHOOK is not enabled in .env"
+        exit 1
+    fi
+
+    ./rpm-tools/rpm-tool copr-build \
+        --spec-file="./sunshine.spec" \
+        --copr-webhook="$COPR_WEBHOOK"/sunshine \
+        --copr-owner="$COPR_OWNER" \
+        --copr-project="sunshine" \
+        --copr-package="sunshine" \
+        &
+    ./rpm-tools/rpm-tool copr-build \
+        --spec-file="./sunshine-beta.spec" \
+        --copr-webhook="$COPR_WEBHOOK"/sunshine-beta \
+        --copr-owner="$COPR_OWNER" \
+        --copr-project="sunshine" \
+        --copr-package="sunshine-beta"
+
+    wait
+    exit 0
+fi
 
 ./rpm-tools/rpm-tool "$@"
