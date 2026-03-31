@@ -190,7 +190,7 @@ update_spec_file() {
       if [ "$disable_version_update" = "true" ]; then
         set_tag=$current_tag
       fi
-        sed -i "s/%global\s$key\s.*/%global $key $set_tag/" "./${output_spec_file}"
+      sed -i "s/%global\s$key\s.*/%global $key $set_tag/" "./${output_spec_file}"
     fi
   done
 

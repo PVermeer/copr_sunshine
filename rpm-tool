@@ -4,7 +4,6 @@ set -e
 set -o pipefail
 
 source "./.env"
-
 trap 'kill 0' INT TERM
 
 ./scripts/update.sh all --no-version-update
