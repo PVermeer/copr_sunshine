@@ -9,7 +9,7 @@ This COPR repo aims to make Sunshine available on all chroots with the latest st
 
 ### Fedora copr
 
-https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine/package/sunshine-beta/
+https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine
 
 ### Credits
 
