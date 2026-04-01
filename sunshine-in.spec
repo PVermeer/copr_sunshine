@@ -61,15 +61,10 @@ BuildRequires: glslc
 Self-hosted game stream host for Moonlight.
 
 %define sourcesdir %{_builddir}/source
-%define coprdir %{sourcesdir}/%{coprsource}
 %define sourcedir %{sourcesdir}/%{source}
-%define bindir %{_builddir}/bin
 %define cudadir %{_builddir}/cuda-env
 
 %prep
-mkdir -p %{bindir}
-export PATH=%{bindir}:$PATH
-
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
 
