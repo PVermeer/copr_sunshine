@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 RUN sudo dnf update -y
-RUN sudo dnf install -y git
+RUN sudo dnf install -y git shfmt
 
 # Create the user
 ARG USERNAME=vscode

@@ -16,6 +16,15 @@ if [ "$1" = "--local-all" ]; then
     exit 0
 fi
 
+if [ "$1" = "--build-stable" ]; then
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec"
+	exit 0
+fi
+if [ "$1" = "--build-beta" ]; then
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec"
+	exit 0
+fi
+
 if [ "$1" = "--copr-all-test" ]; then
     if [ "$IS_LIVE" = "true" ]; then
         echo_error "Live COPR_WEBHOOK is enabled in .env !!!"
