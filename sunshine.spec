@@ -123,7 +123,7 @@ cd %{sourcedir}/build
 
 # Keep old service with symlink
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ] && [ -f %{buildroot}%{_userunitdir}/app-dev.lizardbyte.app.Sunshine.service ]; then
-    ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
+  ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
 fi
 
 %check
@@ -136,9 +136,14 @@ fi
 modprobe uhid || true
 udevadm control --reload-rules || true
 udevadm trigger || true
+%systemd_user_post sunshine.service
+
+%preun
+%systemd_user_preun sunshine.service
 
 %postun
 udevadm control --reload-rules || true
+%systemd_user_postun_with_restart sunshine.service
 
 %files
 %caps(cap_sys_admin+p) %{_bindir}/sunshine

@@ -9,6 +9,10 @@ trap 'kill 0' INT TERM
 source ./rpm-tools/scripts/bash-color.sh
 ./scripts/update.sh all --no-version-update
 
+if [ "$1" = "--only-update" ]; then
+    exit 0
+fi
+
 if [ "$1" = "--local-all" ]; then
     ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec"
     ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec"
@@ -18,11 +22,11 @@ fi
 
 if [ "$1" = "--build-stable" ]; then
     ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec"
-	exit 0
+    exit 0
 fi
 if [ "$1" = "--build-beta" ]; then
     ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec"
-	exit 0
+    exit 0
 fi
 
 if [ "$1" = "--copr-all-test" ]; then
