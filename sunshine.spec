@@ -68,7 +68,14 @@ Self-hosted game stream host for Moonlight.
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
 
-git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
+# Local testing
+%if 0%{?with_local}
+  mkdir -p %{sourcedir}
+  cp -r %{_topdir}/SOURCES/. %{sourcesdir}
+# Copr
+%else
+  git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
+%endif
 
 cd %{sourcedir}
 git fetch --depth=1 origin %{commit}
