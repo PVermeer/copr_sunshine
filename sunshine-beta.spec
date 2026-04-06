@@ -121,7 +121,16 @@ make -j$(nproc) -C "%{sourcedir}/build"
 cd %{sourcedir}/build
 %make_install
 
+# Keep old service with symlink
+if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ] && [ -f %{buildroot}%{_userunitdir}/app-dev.lizardbyte.app.Sunshine.service ]; then
+    ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
+fi
+
 %check
+if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
+  echo "Error: missing sunshine.service" >&2
+  exit 1
+fi
 
 %post
 modprobe uhid || true
