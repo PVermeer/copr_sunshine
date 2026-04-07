@@ -126,6 +126,14 @@ if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ] && [ -f %{buildroot}%{_
   ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
 fi
 
+# Add service override to start properly on Gnome
+mkdir -p %{buildroot}%{_userunitdir}/sunshine.service.d
+echo "\
+[Install]
+WantedBy=gnome-session.target
+WantedBy=xdg-desktop-autostart.target
+" > %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
+
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
   echo "Error: missing sunshine.service" >&2
@@ -149,6 +157,7 @@ udevadm control --reload-rules || true
 %caps(cap_sys_admin+p) %{_bindir}/sunshine
 %caps(cap_sys_admin+p) %{_bindir}/sunshine-*
 %{_userunitdir}/*.service
+%{_userunitdir}/sunshine.service.d/override.conf
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
