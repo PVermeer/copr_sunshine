@@ -25,7 +25,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -122,7 +122,9 @@ cd %{sourcedir}/build
 %make_install
 
 # Keep old service with symlink
-if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ] && [ -f %{buildroot}%{_userunitdir}/app-dev.lizardbyte.app.Sunshine.service ]; then
+if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ] \
+  && [ -f %{buildroot}%{_userunitdir}/app-dev.lizardbyte.app.Sunshine.service ]; \
+then
   ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
 fi
 
@@ -141,16 +143,20 @@ if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
 fi
 
 %post
-modprobe uhid || true
-udevadm control --reload-rules || true
-udevadm trigger || true
+if ! command -v rpm-ostree >/dev/null 2>&1; then
+  modprobe uhid || :
+  udevadm control --reload-rules || :
+  udevadm trigger || :
+fi
 %systemd_user_post sunshine.service
 
 %preun
 %systemd_user_preun sunshine.service
 
 %postun
-udevadm control --reload-rules || true
+if ! command -v rpm-ostree >/dev/null 2>&1; then
+  udevadm control --reload-rules || :
+fi
 %systemd_user_postun_with_restart sunshine.service
 
 %files
