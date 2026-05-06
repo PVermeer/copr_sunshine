@@ -13,6 +13,10 @@
 %global version 0
 %global releasetype 0
 
+# Copr repo
+%global coprrepo https://github.com/PVermeer/copr_sunshine
+%global coprsource copr_sunshine
+
 # Issues ⤵
 %undefine _hardened_build
 

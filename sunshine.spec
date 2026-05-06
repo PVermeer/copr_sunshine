@@ -13,6 +13,10 @@
 %global version 2025.924.154138
 %global releasetype stable
 
+# Copr repo
+%global coprrepo https://github.com/PVermeer/copr_sunshine
+%global coprsource copr_sunshine
+
 # Issues ⤵
 %undefine _hardened_build
 
