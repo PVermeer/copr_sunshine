@@ -29,7 +29,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -117,6 +117,7 @@ cmake_args=(
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
   "-DSUNSHINE_ENABLE_VULKAN=ON"
+  "-DSUNSHINE_ENABLE_KWIN=ON"
 )
 cmake "${cmake_args[@]}"
 make -j$(nproc) -C "%{sourcedir}/build"
@@ -140,9 +141,21 @@ WantedBy=gnome-session.target
 WantedBy=xdg-desktop-autostart.target
 " > %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
 
+# Only have one binary (sunshine)
+if [ -L %{buildroot}%{_bindir}/sunshine ] \
+  && [ -f %{buildroot}%{_bindir}/sunshine-%{version} ]; \
+then
+  rm %{buildroot}%{_bindir}/sunshine
+  mv %{buildroot}%{_bindir}/sunshine-%{version} %{buildroot}%{_bindir}/sunshine
+fi
+
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
   echo "Error: missing sunshine.service" >&2
+  exit 1
+fi
+if [ -L %{buildroot}%{_bindir}/sunshine ]; then
+  echo "Error: sunshine is a symlink" >&2
   exit 1
 fi
 
@@ -165,7 +178,6 @@ fi
 
 %files
 %caps(cap_sys_admin+p) %{_bindir}/sunshine
-%caps(cap_sys_admin+p) %{_bindir}/sunshine-*
 %{_userunitdir}/*.service
 %{_userunitdir}/sunshine.service.d/override.conf
 %{_udevrulesdir}/*-sunshine.rules

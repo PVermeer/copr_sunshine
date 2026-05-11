@@ -4,11 +4,50 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build rpm",
+            "label": "Build rpm all",
             "type": "shell",
             "command": "./rpm-tool",
             "args": [
                 "--local-all",
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build rpm stable",
+            "type": "shell",
+            "command": "./rpm-tool",
+            "args": [
+                "--build-stable",
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build rpm beta",
+            "type": "shell",
+            "command": "./rpm-tool",
+            "args": [
+                "--build-beta",
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "COPR test all",
+            "type": "shell",
+            "command": "./rpm-tool",
+            "args": [
+                "--copr-all-test",
             ],
             "problemMatcher": [],
             "group": {
