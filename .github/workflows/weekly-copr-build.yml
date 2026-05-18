@@ -48,10 +48,10 @@ jobs:
       - name: Check for changes
         if: ${{ env.RPM_SPEC_UPDATE == 'true' || env.COPR_STATUS == 'forked' }}
         run: |
-          if [ "RPM_SPEC_UPDATE" = "true" ]; then
+          if [ "$RPM_SPEC_UPDATE" = "true" ]; then
             echo "A new stable version of Sunshine has been released"
           fi
-          if [ "COPR_STATUS" = "true" ]; then
+          if [ "$COPR_STATUS" = "forked" ]; then
             echo "Fedora has been forked, new build needed"
           fi
           exit 1
