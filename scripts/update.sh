@@ -146,6 +146,7 @@ update_spec_file() {
       if [ "$disable_version_update" = "true" ]; then
         echo_warning "Version update is disabled"
         new_version=$current_version
+        RPM_SPEC_UPDATE="false"
       fi
 
       sed -i "s/%global\s$key\s.*/%global $key $new_version/" "./${output_spec_file}"
@@ -171,6 +172,7 @@ update_spec_file() {
       if [ "$disable_version_update" = "true" ]; then
         echo_warning "Version update is disabled"
         new_commit=$current_commit
+        RPM_SPEC_UPDATE="false"
       fi
 
       sed -i "s/%global\s$key\s.*/%global $key $new_commit/" "./${output_spec_file}"
@@ -189,7 +191,9 @@ update_spec_file() {
 
       if [ "$disable_version_update" = "true" ]; then
         set_tag=$current_tag
+        RPM_SPEC_UPDATE="false"
       fi
+
       sed -i "s/%global\s$key\s.*/%global $key $set_tag/" "./${output_spec_file}"
     fi
   done
@@ -197,6 +201,10 @@ update_spec_file() {
   if [ "$RPM_SPEC_UPDATE" = "true" ]; then
     echo ""
     echo_success "Updated: $output_spec_file"
+
+    if [ "$release_type" = "stable" ]; then
+      ./rpm-tool update-submodules --spec-file="./${output_spec_file}"
+    fi
   fi
 }
 
