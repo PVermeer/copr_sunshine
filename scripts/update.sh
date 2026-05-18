@@ -198,7 +198,7 @@ update_spec_file() {
     echo ""
     echo_success "Updated: $output_spec_file"
 
-    if [ "$release_type" = "stable" ]; then
+    if [ "$release_type" = "stable" ] && [ ! "$CI" = "true" ]; then
       ./rpm-tools/rpm-tool update-submodules \
         --spec-file="./${output_spec_file}" \
         --disable-self-update
