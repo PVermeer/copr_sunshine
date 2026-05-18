@@ -29,7 +29,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 5%{?dist}
+Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -89,7 +89,6 @@ cd %{_builddir}
 
 %build
 cd %{sourcedir}
-source /etc/os-release
 
 export BRANCH=master
 export BUILD_VERSION=v%{version}
@@ -141,21 +140,9 @@ WantedBy=gnome-session.target
 WantedBy=xdg-desktop-autostart.target
 " > %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
 
-# Only have one binary (sunshine)
-if [ -L %{buildroot}%{_bindir}/sunshine ] \
-  && [ -f %{buildroot}%{_bindir}/sunshine-%{version} ]; \
-then
-  rm %{buildroot}%{_bindir}/sunshine
-  mv %{buildroot}%{_bindir}/sunshine-%{version} %{buildroot}%{_bindir}/sunshine
-fi
-
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
   echo "Error: missing sunshine.service" >&2
-  exit 1
-fi
-if [ -L %{buildroot}%{_bindir}/sunshine ]; then
-  echo "Error: sunshine is a symlink" >&2
   exit 1
 fi
 

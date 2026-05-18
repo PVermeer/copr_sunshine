@@ -8,9 +8,9 @@
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2025.924.154138
-%global commit 86188d47a7463b0f73b35de18a628353adeaa20e
-%global version 2025.924.154138
+%global tag v2026.516.143833
+%global commit 14ffa6fdaa53f7b51512be2b3d24f3939695403c
+%global version 2026.516.143833
 %global releasetype stable
 
 # Copr repo
@@ -29,7 +29,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 5%{?dist}
+Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -89,7 +89,6 @@ cd %{_builddir}
 
 %build
 cd %{sourcedir}
-source /etc/os-release
 
 export BRANCH=master
 export BUILD_VERSION=v%{version}
@@ -141,21 +140,9 @@ WantedBy=gnome-session.target
 WantedBy=xdg-desktop-autostart.target
 " > %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
 
-# Only have one binary (sunshine)
-if [ -L %{buildroot}%{_bindir}/sunshine ] \
-  && [ -f %{buildroot}%{_bindir}/sunshine-%{version} ]; \
-then
-  rm %{buildroot}%{_bindir}/sunshine
-  mv %{buildroot}%{_bindir}/sunshine-%{version} %{buildroot}%{_bindir}/sunshine
-fi
-
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
   echo "Error: missing sunshine.service" >&2
-  exit 1
-fi
-if [ -L %{buildroot}%{_bindir}/sunshine ]; then
-  echo "Error: sunshine is a symlink" >&2
   exit 1
 fi
 
