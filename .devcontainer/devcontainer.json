@@ -32,7 +32,7 @@
 				"redhat.vscode-yaml",
 				"timonwong.shellcheck",
 				"redhat.vscode-xml",
-				"mkhl.shfmt",
+				"lumirelle.shell-format-rev",
 				"esbenp.prettier-vscode",
 				"ms-azuretools.vscode-containers",
 				"RVSmartPorting.rpm-spec-ext",

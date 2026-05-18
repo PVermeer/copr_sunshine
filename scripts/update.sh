@@ -6,12 +6,8 @@
 set -e
 set -o pipefail
 
-if [ "$CI" = "true" ]; then
-  source ../rpm-tools/scripts/bash-color.sh
-else
-  # shellcheck source=../rpm-tools/scripts/bash-color.sh
-  source ./rpm-tools/scripts/bash-color.sh
-fi
+# shellcheck source=../rpm-tools/scripts/bash-color.sh
+source ./rpm-tools/scripts/bash-color.sh
 
 release_type=$1
 if [ ! "$release_type" = "stable" ] && [ ! "$release_type" = "beta" ] && [ ! "$release_type" = "all" ]; then
@@ -146,6 +142,7 @@ update_spec_file() {
       if [ "$disable_version_update" = "true" ]; then
         echo_warning "Version update is disabled"
         new_version=$current_version
+        RPM_SPEC_UPDATE="false"
       fi
 
       sed -i "s/%global\s$key\s.*/%global $key $new_version/" "./${output_spec_file}"
@@ -171,6 +168,7 @@ update_spec_file() {
       if [ "$disable_version_update" = "true" ]; then
         echo_warning "Version update is disabled"
         new_commit=$current_commit
+        RPM_SPEC_UPDATE="false"
       fi
 
       sed -i "s/%global\s$key\s.*/%global $key $new_commit/" "./${output_spec_file}"
@@ -189,7 +187,9 @@ update_spec_file() {
 
       if [ "$disable_version_update" = "true" ]; then
         set_tag=$current_tag
+        RPM_SPEC_UPDATE="false"
       fi
+
       sed -i "s/%global\s$key\s.*/%global $key $set_tag/" "./${output_spec_file}"
     fi
   done
@@ -197,6 +197,12 @@ update_spec_file() {
   if [ "$RPM_SPEC_UPDATE" = "true" ]; then
     echo ""
     echo_success "Updated: $output_spec_file"
+
+    if [ "$release_type" = "stable" ] && [ ! "$CI" = "true" ]; then
+      ./rpm-tools/rpm-tool update-submodules \
+        --spec-file="./${output_spec_file}" \
+        --disable-self-update
+    fi
   fi
 }
 

@@ -26,17 +26,16 @@ jobs:
       - name: Dependencies
         run: sudo apt-get install -y git jq rpm rpmlint
 
-      - name: Checkout rpm-tools
-        uses: actions/checkout@v4
-        with:
-          repository: pvermeer/rpm-tools
-          path: rpm-tools
-
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           path: repo
+
+      - name: Checkout rpm-tools
+        run: |
+          cd repo
+          git submodule update --init rpm-tools
 
       - name: Update RPM
         run: |
@@ -48,10 +47,10 @@ jobs:
       - name: Check for changes
         if: ${{ env.RPM_SPEC_UPDATE == 'true' || env.COPR_STATUS == 'forked' }}
         run: |
-          if [ "RPM_SPEC_UPDATE" = "true" ]; then
+          if [ "$RPM_SPEC_UPDATE" = "true" ]; then
             echo "A new stable version of Sunshine has been released"
           fi
-          if [ "COPR_STATUS" = "true" ]; then
+          if [ "$COPR_STATUS" = "forked" ]; then
             echo "Fedora has been forked, new build needed"
           fi
           exit 1
