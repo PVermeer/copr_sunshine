@@ -6,12 +6,8 @@
 set -e
 set -o pipefail
 
-if [ "$CI" = "true" ]; then
-  source ../rpm-tools/scripts/bash-color.sh
-else
-  # shellcheck source=../rpm-tools/scripts/bash-color.sh
-  source ./rpm-tools/scripts/bash-color.sh
-fi
+# shellcheck source=../rpm-tools/scripts/bash-color.sh
+source ./rpm-tools/scripts/bash-color.sh
 
 release_type=$1
 if [ ! "$release_type" = "stable" ] && [ ! "$release_type" = "beta" ] && [ ! "$release_type" = "all" ]; then
