@@ -26,17 +26,16 @@ jobs:
       - name: Dependencies
         run: sudo apt-get install -y git jq rpm rpmlint
 
-      - name: Checkout rpm-tools
-        uses: actions/checkout@v4
-        with:
-          repository: pvermeer/rpm-tools
-          path: rpm-tools
-
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           path: repo
+
+      - name: Checkout rpm-tools
+        run: |
+          cd repo
+          git submodule update --init rpm-tools
 
       - name: Update RPM
         run: |
