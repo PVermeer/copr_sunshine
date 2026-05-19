@@ -29,7 +29,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -164,7 +164,7 @@ fi
 %systemd_user_postun_with_restart sunshine.service
 
 %files
-%caps(cap_sys_admin+p) %{_bindir}/sunshine
+%caps(cap_sys_admin,cap_sys_nice+p) %{_bindir}/sunshine
 %{_userunitdir}/*.service
 %{_userunitdir}/sunshine.service.d/override.conf
 %{_udevrulesdir}/*-sunshine.rules
