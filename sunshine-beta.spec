@@ -29,7 +29,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -39,7 +39,6 @@ BuildRequires: curl
 BuildRequires: gcc
 BuildRequires: gcc-c++
 BuildRequires: git
-BuildRequires: libappindicator-gtk3-devel
 BuildRequires: libcap-devel
 BuildRequires: libcurl-devel
 BuildRequires: libdrm-devel
@@ -60,6 +59,13 @@ BuildRequires: systemd-rpm-macros
 BuildRequires: systemd-udev
 BuildRequires: vulkan-devel
 BuildRequires: glslc
+%if "%{releasetype}" == "stable"
+BuildRequires: libappindicator-gtk3-devel
+%endif
+%if "%{releasetype}" == "beta"
+BuildRequires: qt6-qtbase-devel
+BuildRequires: qt6-qtsvg-devel
+%endif
 
 %description
 Self-hosted game stream host for Moonlight.
@@ -171,6 +177,9 @@ fi
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
 %{_datadir}/icons/hicolor/scalable/apps/*.svg
-%{_datadir}/icons/hicolor/scalable/status/*.svg
 %{_datadir}/metainfo/*.metainfo.xml
 %{_datadir}/sunshine/**
+
+%if "%{releasetype}" == "stable"
+%{_datadir}/icons/hicolor/scalable/status/*.svg
+%endif
