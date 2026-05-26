@@ -59,6 +59,7 @@ BuildRequires: systemd-rpm-macros
 BuildRequires: systemd-udev
 BuildRequires: vulkan-devel
 BuildRequires: glslc
+BuildRequires: libXfixes-devel
 %if "%{releasetype}" == "stable"
 BuildRequires: libappindicator-gtk3-devel
 %endif
