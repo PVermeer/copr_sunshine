@@ -60,6 +60,7 @@ BuildRequires: systemd-udev
 BuildRequires: vulkan-devel
 BuildRequires: glslc
 BuildRequires: libXfixes-devel
+BuildRequires: libXrandr-devel 
 %if "%{releasetype}" == "stable"
 BuildRequires: libappindicator-gtk3-devel
 %endif
