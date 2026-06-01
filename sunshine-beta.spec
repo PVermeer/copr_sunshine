@@ -60,7 +60,10 @@ BuildRequires: systemd-udev
 BuildRequires: vulkan-devel
 BuildRequires: glslc
 BuildRequires: libXfixes-devel
-BuildRequires: libXrandr-devel 
+BuildRequires: libXrandr-devel
+BuildRequires: python3-jinja2
+BuildRequires: python3-setuptools
+BuildRequires: uv
 %if "%{releasetype}" == "stable"
 BuildRequires: libappindicator-gtk3-devel
 %endif

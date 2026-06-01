@@ -2,3 +2,4 @@
 rpmbuild/
 build/
 .mamba
+build.log
