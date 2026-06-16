@@ -55,5 +55,18 @@
                 "isDefault": true
             }
         },
+        {
+            "label": "COPR live all",
+            "type": "shell",
+            "command": "./rpm-tool",
+            "args": [
+                "--copr-all-live",
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
     ]
 }
