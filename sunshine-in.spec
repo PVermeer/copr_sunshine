@@ -16,6 +16,7 @@
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
+%global coprbranch 0
 
 # Issues ⤵
 %undefine _hardened_build
@@ -90,10 +91,10 @@ micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
   mkdir -p %{coprdir}
   cp -r %{_topdir}/SOURCES/. %{coprdir}
 %else
-  git clone %{coprrepo} --depth=1 %{coprdir}
+  git clone --branch %{coprbranch} --single-branch --depth=1 %{coprrepo} %{coprdir}
 %endif
 
-git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
+git clone --depth=1 --no-checkout %{sourcerepo} %{sourcedir}
 cd %{sourcedir}
 git fetch --depth=1 origin %{commit}
 git reset --hard %{commit}
