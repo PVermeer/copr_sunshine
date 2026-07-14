@@ -8,9 +8,9 @@
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2026.531.163415
-%global commit fe500199604f0db5bde25bf640779c54b08248b6
-%global version 2026.531.163415
+%global tag v2026.712.223218
+%global commit 1d9ab7b8d8bb623a9f4608b4ddc5c252e3c9e1c9
+%global version 2026.712.223218
 %global releasetype beta
 
 # Copr repo
@@ -29,7 +29,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -120,9 +120,9 @@ cmake_args=(
   "-DSUNSHINE_ENABLE_PORTAL=ON"
   "-DSUNSHINE_ENABLE_WAYLAND=ON"
   "-DSUNSHINE_ENABLE_X11=ON"
-  "-DSUNSHINE_PUBLISHER_NAME=LizardByte"
-  "-DSUNSHINE_PUBLISHER_WEBSITE=https://app.lizardbyte.dev"
-  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://app.lizardbyte.dev/support"
+  "-DSUNSHINE_PUBLISHER_NAME=copr:pvermeer:sunshine"
+  "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine"
+  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues"
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"

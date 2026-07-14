@@ -45,6 +45,13 @@ jobs:
           source $XDG_RUNTIME_DIR/update-vars
           echo "RPM_SPEC_UPDATE=$RPM_SPEC_UPDATE" >> $GITHUB_ENV
 
+      - name: Check COPR status
+        run: |
+          cd repo
+          ../rpm-tools/rpm-tool copr-status --disable-self-update --check-forked || true
+          source $XDG_RUNTIME_DIR/rpm-tool-vars
+          echo "COPR_STATUS=$COPR_STATUS" >> $GITHUB_ENV
+
       - name: Check for changes
         if: ${{ env.RPM_SPEC_UPDATE == 'true' || env.COPR_STATUS == 'forked' }}
         run: |
