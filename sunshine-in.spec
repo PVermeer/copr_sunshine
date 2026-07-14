@@ -75,27 +75,30 @@ BuildRequires: qt6-qtsvg-devel
 %description
 Self-hosted game stream host for Moonlight.
 
-%define sourcesdir %{_builddir}/source
+%define sourcesdir %{_builddir}/sources
 %define sourcedir %{sourcesdir}/%{source}
+%define coprdir %{sourcesdir}/%{coprsource}
 %define cudadir %{_builddir}/cuda-env
 
 %prep
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
 
-# Local testing
+# To apply working changes handle sources / patches with local changes.
+# COPR should clone the commited changes.
 %if 0%{?with_local}
-  mkdir -p %{sourcedir}
-  cp -r %{_topdir}/SOURCES/. %{sourcesdir}
-# Copr
+  mkdir -p %{coprdir}
+  cp -r %{_topdir}/SOURCES/. %{coprdir}
 %else
-  git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
+  git clone %{coprrepo} --depth=1 %{coprdir}
 %endif
 
+git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
 cd %{sourcedir}
 git fetch --depth=1 origin %{commit}
 git reset --hard %{commit}
 git submodule update --init --depth 1 --recursive
+git apply %{coprdir}/patches/%{releasetype}/*.patch
 cd %{_builddir}
 
 %build
@@ -126,6 +129,7 @@ cmake_args=(
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
+  "-DPVERMEER_CUDA_LIBRARY_PATH=%{cudadir}/lib"
   "-DSUNSHINE_ENABLE_VULKAN=ON"
   "-DSUNSHINE_ENABLE_KWIN=ON"
 )

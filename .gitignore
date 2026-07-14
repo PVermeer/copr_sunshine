@@ -3,3 +3,4 @@ rpmbuild/
 build/
 .mamba
 build.log
+worktrees/
