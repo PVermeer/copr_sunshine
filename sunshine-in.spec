@@ -52,7 +52,6 @@ BuildRequires: miniupnpc-devel
 BuildRequires: nodejs
 BuildRequires: npm
 BuildRequires: numactl-devel
-BuildRequires: openssl-devel
 BuildRequires: opus-devel
 BuildRequires: pipewire-devel
 BuildRequires: pulseaudio-libs-devel
@@ -65,12 +64,24 @@ BuildRequires: libXrandr-devel
 BuildRequires: python3-jinja2
 BuildRequires: python3-setuptools
 BuildRequires: uv
+
+# Dep updates stable -> beta and fedora rawhide ⤵
 %if "%{releasetype}" == "stable"
-BuildRequires: libappindicator-gtk3-devel
+# fix(linux): migrate to qt tray (#4907)
+BuildRequires: libappindicator-gtk3-devel 
+%if 0%{?fedora} >= 45
+# fix(crypto): OpenSSL 4.x compatibility (#5330)
+BuildRequires: openssl3-devel
+%else
+BuildRequires: openssl-devel
+%endif
 %endif
 %if "%{releasetype}" == "beta"
+# fix(linux): migrate to qt tray (#4907)
 BuildRequires: qt6-qtbase-devel
 BuildRequires: qt6-qtsvg-devel
+# fix(crypto): OpenSSL 4.x compatibility (#5330)
+BuildRequires: openssl-devel
 %endif
 
 %description
