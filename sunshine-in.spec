@@ -99,7 +99,7 @@ cd %{sourcedir}
 git fetch --depth=1 origin %{commit}
 git reset --hard %{commit}
 git submodule update --init --depth 1 --recursive
-git apply %{coprdir}/patches/%{releasetype}/*.patch
+git apply -v %{coprdir}/patches/%{releasetype}/*.patch
 cd %{_builddir}
 
 %build
