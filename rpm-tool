@@ -16,18 +16,21 @@ fi
 ./scripts/update.sh all --no-version-update
 
 if [ "$1" = "--local-all" ]; then
-    ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec"
-    ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec"
+    shift
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec" "$@"
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec" "$@"
 
     exit 0
 fi
 
 if [ "$1" = "--build-stable" ]; then
-    ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec"
+    shift
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine.spec" "$@"
     exit 0
 fi
 if [ "$1" = "--build-beta" ]; then
-    ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec"
+    shift
+    ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec" "$@"
     exit 0
 fi
 

@@ -16,6 +16,7 @@
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
+%global coprbranch testing
 
 # Issues ⤵
 %undefine _hardened_build
@@ -29,7 +30,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{coprrepo}
@@ -51,7 +52,6 @@ BuildRequires: miniupnpc-devel
 BuildRequires: nodejs
 BuildRequires: npm
 BuildRequires: numactl-devel
-BuildRequires: openssl-devel
 BuildRequires: opus-devel
 BuildRequires: pipewire-devel
 BuildRequires: pulseaudio-libs-devel
@@ -64,38 +64,53 @@ BuildRequires: libXrandr-devel
 BuildRequires: python3-jinja2
 BuildRequires: python3-setuptools
 BuildRequires: uv
+
+# Dep updates stable -> beta and fedora rawhide ⤵
 %if "%{releasetype}" == "stable"
-BuildRequires: libappindicator-gtk3-devel
+# fix(linux): migrate to qt tray (#4907)
+BuildRequires: libappindicator-gtk3-devel 
+%if 0%{?fedora} >= 45
+# fix(crypto): OpenSSL 4.x compatibility (#5330)
+BuildRequires: openssl3-devel
+%else
+BuildRequires: openssl-devel
+%endif
 %endif
 %if "%{releasetype}" == "beta"
+# fix(linux): migrate to qt tray (#4907)
 BuildRequires: qt6-qtbase-devel
 BuildRequires: qt6-qtsvg-devel
+# fix(crypto): OpenSSL 4.x compatibility (#5330)
+BuildRequires: openssl-devel
 %endif
 
 %description
 Self-hosted game stream host for Moonlight.
 
-%define sourcesdir %{_builddir}/source
+%define sourcesdir %{_builddir}/sources
 %define sourcedir %{sourcesdir}/%{source}
+%define coprdir %{sourcesdir}/%{coprsource}
 %define cudadir %{_builddir}/cuda-env
 
 %prep
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
 
-# Local testing
+# To apply working changes handle sources / patches with local changes.
+# COPR should clone the commited changes.
 %if 0%{?with_local}
-  mkdir -p %{sourcedir}
-  cp -r %{_topdir}/SOURCES/. %{sourcesdir}
-# Copr
+  mkdir -p %{coprdir}
+  cp -r %{_topdir}/SOURCES/. %{coprdir}
 %else
-  git clone %{sourcerepo} --depth=1 --no-checkout %{sourcedir}
+  git clone --branch %{coprbranch} --single-branch --depth=1 %{coprrepo} %{coprdir}
 %endif
 
+git clone --depth=1 --no-checkout %{sourcerepo} %{sourcedir}
 cd %{sourcedir}
 git fetch --depth=1 origin %{commit}
 git reset --hard %{commit}
 git submodule update --init --depth 1 --recursive
+git apply -v %{coprdir}/patches/%{releasetype}/*.patch
 cd %{_builddir}
 
 %build
@@ -126,6 +141,7 @@ cmake_args=(
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
+  "-DPVERMEER_CUDA_LIBRARY_PATH=%{cudadir}/lib"
   "-DSUNSHINE_ENABLE_VULKAN=ON"
   "-DSUNSHINE_ENABLE_KWIN=ON"
 )

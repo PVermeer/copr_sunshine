@@ -125,6 +125,23 @@ update_spec_file() {
 		key=$(get_key "$keyValue")
 		value=$(get_value "$keyValue")
 
+		if [[ $key = coprbranch ]]; then
+			current_copr_branch=$value
+			new_copr_branch=$(git branch --show-current)
+
+			echo ""
+			echo_color -n "$key:"
+			echo " $current_copr_branch -> $new_copr_branch"
+
+			if [ "$current_copr_branch" = "$new_copr_branch" ]; then
+				echo_success "No copr repo change detected for $release_type"
+			else
+				echo_warning "Copr repo change detected for $release_type"
+			fi
+
+			sed -i "s/%global\scoprbranch\s.*/%global coprbranch $new_copr_branch/" "./${spec_file}"
+		fi
+
 		if [ "$key" = "version" ]; then
 			local current_version
 			local new_version
