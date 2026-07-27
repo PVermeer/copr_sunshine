@@ -8,9 +8,9 @@
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2026.715.205118
-%global commit 9d2409f71b60f1812f482e6dd807dc52e2f72fe7
-%global version 2026.715.205118
+%global tag v2026.726.710
+%global commit 7cb92071ac4394698e92ff6d070d310db9acc32c
+%global version 2026.726.710
 %global releasetype beta
 
 # Copr repo
