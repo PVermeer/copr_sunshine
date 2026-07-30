@@ -161,16 +161,15 @@ then
 fi
 
 # Add service override to start properly on Gnome
-mkdir -p %{buildroot}%{_userunitdir}/sunshine.service.d
-echo "\
-[Install]
-WantedBy=gnome-session.target
-WantedBy=xdg-desktop-autostart.target
-" > %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
+cp -r %{coprdir}/assets/sunshine.service.d %{buildroot}%{_userunitdir}
 
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
   echo "Error: missing sunshine.service" >&2
+  exit 1
+fi
+if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf ]; then
+  echo "Error: missing sunshine.service.d/override.conf" >&2
   exit 1
 fi
 
