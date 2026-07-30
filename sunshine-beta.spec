@@ -16,7 +16,7 @@
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
-%global coprbranch main
+%global coprbranch testing
 
 # Issues ⤵
 %undefine _hardened_build
@@ -44,7 +44,6 @@ BuildRequires: libcap-devel
 BuildRequires: libcurl-devel
 BuildRequires: libdrm-devel
 BuildRequires: libevdev-devel
-BuildRequires: libnotify-devel
 BuildRequires: libva-devel
 BuildRequires: mesa-libgbm-devel
 BuildRequires: micromamba
@@ -67,8 +66,9 @@ BuildRequires: uv
 
 # Dep updates stable -> beta and fedora rawhide ⤵
 %if "%{releasetype}" == "stable"
-# fix(linux): migrate to qt tray (#4907)
+# fix(linux): migrate to qt tray (#4907) & chore: migrate to qt tray for all platforms (#5260)
 BuildRequires: libappindicator-gtk3-devel 
+BuildRequires: libnotify-devel
 %if 0%{?fedora} >= 45
 # fix(crypto): OpenSSL 4.x compatibility (#5330)
 BuildRequires: openssl3-devel
