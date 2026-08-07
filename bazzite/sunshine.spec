@@ -7,6 +7,8 @@ Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: https://github.com/LizardByte/Sunshine
 
+Source0: sunshine-service-override.conf
+
 Patch0: disable-std-static-linking.patch
 Patch1: cuda-use-external-deps.patch
 Patch2: disable-codecov.patch
@@ -112,13 +114,8 @@ then
   ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
 fi
 
-# Add service override to start properly on Gnome
-mkdir -p %{buildroot}%{_userunitdir}/sunshine.service.d
-echo "\
-[Install]
-WantedBy=gnome-session.target
-WantedBy=xdg-desktop-autostart.target
-" > %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
+# Install service override to start properly on Gnome
+install -Dm0644 %{SOURCE0} %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
 
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
