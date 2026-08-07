@@ -43,8 +43,6 @@ BuildRequires: python3-setuptools
 BuildRequires: uv
 BuildRequires: libappindicator-gtk3-devel
 BuildRequires: libnotify-devel
-BuildRequires: qt6-qtbase-devel
-BuildRequires: qt6-qtsvg-devel
 %if 0%{?fedora} >= 45
 # fix(crypto): OpenSSL 4.x compatibility (#5330)
 BuildRequires: openssl3-devel
