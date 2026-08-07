@@ -33,6 +33,32 @@ if [ "$1" = "--build-beta" ]; then
     ./rpm-tools/rpm-tool build --spec-file="./sunshine-beta.spec" "$@"
     exit 0
 fi
+if [ "$1" = "--build-bazzite" ]; then
+    shift
+    cd bazzite/
+    ./../rpm-tools/rpm-tool build --spec-file="./sunshine.spec" "$@"
+    cd -
+    exit 0
+fi
+
+if [ "$1" = "--copr-bazzite-test" ]; then
+    if [ "$IS_LIVE" = "true" ]; then
+        echo_error "Live COPR_WEBHOOK is enabled in .env !!!"
+        exit 1
+    fi
+
+    cd bazzite/ &&
+        ./../rpm-tools/rpm-tool copr-build \
+            --spec-file="./sunshine.spec" \
+            --copr-webhook="$COPR_WEBHOOK"/sunshine-bazzite \
+            --copr-owner="$COPR_OWNER" \
+            --copr-project="sunshine-test" \
+            --copr-package="sunshine-bazzite" \
+            --copr-watch &&
+        cd -
+
+    exit 0
+fi
 
 if [ "$1" = "--copr-all-test" ]; then
     if [ "$IS_LIVE" = "true" ]; then
@@ -54,7 +80,17 @@ if [ "$1" = "--copr-all-test" ]; then
         --copr-owner="$COPR_OWNER" \
         --copr-project="sunshine-test" \
         --copr-package="sunshine-beta" \
-        --copr-watch
+        --copr-watch \
+        &
+    cd bazzite/ &&
+        ./../rpm-tools/rpm-tool copr-build \
+            --spec-file="./sunshine.spec" \
+            --copr-webhook="$COPR_WEBHOOK"/sunshine-bazzite \
+            --copr-owner="$COPR_OWNER" \
+            --copr-project="sunshine-test" \
+            --copr-package="sunshine-bazzite" \
+            --copr-watch &&
+        cd -
 
     wait
     exit 0
