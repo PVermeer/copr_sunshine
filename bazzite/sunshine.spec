@@ -2,7 +2,7 @@
 
 Name: sunshine
 Version: 2026.516.143833
-Release: %autorelease
+Release: 1%{?dist}.bazzite
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: https://github.com/LizardByte/Sunshine
