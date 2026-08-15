@@ -132,22 +132,22 @@ cmake_args=(
   "-DCMAKE_INSTALL_PREFIX=%{_prefix}"
   "-DSUNSHINE_ASSETS_DIR=%{_datadir}/sunshine"
   "-DSUNSHINE_EXECUTABLE_PATH=%{_bindir}/sunshine"
+  "-DSUNSHINE_ENABLE_X11=ON"
+  "-DSUNSHINE_ENABLE_WAYLAND=ON"
   "-DSUNSHINE_ENABLE_DRM=ON"
   "-DSUNSHINE_ENABLE_PORTAL=ON"
-  "-DSUNSHINE_ENABLE_WAYLAND=ON"
-  "-DSUNSHINE_ENABLE_X11=ON"
+  "-DSUNSHINE_ENABLE_VULKAN=ON"
+  "-DSUNSHINE_ENABLE_KWIN=ON"
   "-DSUNSHINE_PUBLISHER_NAME=copr:pvermeer:sunshine"
   "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine"
   "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues"
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
-  "-DPVERMEER_CUDA_LIBRARY_PATH=%{cudadir}/lib"
-  "-DSUNSHINE_ENABLE_VULKAN=ON"
-  "-DSUNSHINE_ENABLE_KWIN=ON"
+  "-DSUNSHINE_CUDA_LIBRARY_PATH=%{cudadir}/lib"
 )
 cmake "${cmake_args[@]}"
-make -j$(nproc) -C "%{sourcedir}/build"
+make -j$(nproc) -C "build"
 
 %install
 cd %{sourcedir}/build

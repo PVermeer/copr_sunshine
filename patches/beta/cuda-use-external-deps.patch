@@ -17,25 +17,25 @@ index ccfb8d7a..4f512fc6 100644
 +            libcudadevrt.a
 +            libcudart_static.a
 +        )
-+        if(NOT DEFINED PVERMEER_CUDA_LIBRARY_PATH)
++        if(NOT DEFINED SUNSHINE_CUDA_LIBRARY_PATH)
 +            message(FATAL_ERROR
-+                "PVERMEER_CUDA_LIBRARY_PATH is not set. "
-+                "Pass -DPVERMEER_CUDA_LIBRARY_PATH=/path/to/cuda/lib")
++                "SUNSHINE_CUDA_LIBRARY_PATH is not set. "
++                "Pass -DSUNSHINE_CUDA_LIBRARY_PATH=/path/to/cuda/lib")
 +        endif()
-+        if(NOT IS_DIRECTORY "${PVERMEER_CUDA_LIBRARY_PATH}")
++        if(NOT IS_DIRECTORY "${SUNSHINE_CUDA_LIBRARY_PATH}")
 +            message(FATAL_ERROR
-+                "PVERMEER_CUDA_LIBRARY_PATH does not exist: "
-+                "${PVERMEER_CUDA_LIBRARY_PATH}")
++                "SUNSHINE_CUDA_LIBRARY_PATH does not exist: "
++                "${SUNSHINE_CUDA_LIBRARY_PATH}")
 +        endif()
 +        foreach(cuda_lib IN LISTS CUDA_RUNTIME_LIBRARIES)
-+            if(NOT EXISTS "${PVERMEER_CUDA_LIBRARY_PATH}/${cuda_lib}")
++            if(NOT EXISTS "${SUNSHINE_CUDA_LIBRARY_PATH}/${cuda_lib}")
 +                message(FATAL_ERROR
 +                    "Required CUDA library not found: "
-+                    "${PVERMEER_CUDA_LIBRARY_PATH}/${cuda_lib}")
++                    "${SUNSHINE_CUDA_LIBRARY_PATH}/${cuda_lib}")
 +            endif()
 +
 +            list(APPEND PLATFORM_LIBRARIES
-+                "${PVERMEER_CUDA_LIBRARY_PATH}/${cuda_lib}"
++                "${SUNSHINE_CUDA_LIBRARY_PATH}/${cuda_lib}"
 +            )
 +        endforeach()
 +
