@@ -1,5 +1,5 @@
 diff --git a/cmake/compile_definitions/linux.cmake b/cmake/compile_definitions/linux.cmake
-index ccfb8d7a..4f512fc6 100644
+index ccfb8d7a..68f1afd9 100644
 --- a/cmake/compile_definitions/linux.cmake
 +++ b/cmake/compile_definitions/linux.cmake
 @@ -22,6 +22,39 @@ if(${SUNSHINE_ENABLE_CUDA})

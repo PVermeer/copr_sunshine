@@ -1,8 +1,8 @@
 diff --git a/cmake/targets/linux.cmake b/cmake/targets/linux.cmake
-index e8c466cb..42856ef2 100644
+index e8c466cb..11da86ca 100644
 --- a/cmake/targets/linux.cmake
 +++ b/cmake/targets/linux.cmake
-@@ -1,7 +1,7 @@
+@@ -1,7 +1,2 @@
  # linux specific target definitions
  
 -# Using newer c++ compilers / features on older distros causes runtime dyn link errors
@@ -10,8 +10,3 @@ index e8c466cb..42856ef2 100644
 -        -static-libgcc
 -        -static-libstdc++
 -)
-+# # Using newer c++ compilers / features on older distros causes runtime dyn link errors
-+# list(APPEND SUNSHINE_EXTERNAL_LIBRARIES
-+#         -static-libgcc
-+#         -static-libstdc++
-+# )
