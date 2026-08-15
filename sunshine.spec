@@ -16,7 +16,7 @@
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
-%global coprbranch main
+%global coprbranch testing
 
 # Issues ⤵
 %undefine _hardened_build
@@ -33,7 +33,7 @@ Version: %{version}
 Release: 5%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
-URL: %{coprrepo}
+URL: %{sourcerepo}
 
 BuildRequires: cmake
 BuildRequires: curl
@@ -132,22 +132,22 @@ cmake_args=(
   "-DCMAKE_INSTALL_PREFIX=%{_prefix}"
   "-DSUNSHINE_ASSETS_DIR=%{_datadir}/sunshine"
   "-DSUNSHINE_EXECUTABLE_PATH=%{_bindir}/sunshine"
+  "-DSUNSHINE_ENABLE_X11=ON"
+  "-DSUNSHINE_ENABLE_WAYLAND=ON"
   "-DSUNSHINE_ENABLE_DRM=ON"
   "-DSUNSHINE_ENABLE_PORTAL=ON"
-  "-DSUNSHINE_ENABLE_WAYLAND=ON"
-  "-DSUNSHINE_ENABLE_X11=ON"
+  "-DSUNSHINE_ENABLE_VULKAN=ON"
+  "-DSUNSHINE_ENABLE_KWIN=ON"
   "-DSUNSHINE_PUBLISHER_NAME=copr:pvermeer:sunshine"
   "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine"
   "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues"
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
-  "-DPVERMEER_CUDA_LIBRARY_PATH=%{cudadir}/lib"
-  "-DSUNSHINE_ENABLE_VULKAN=ON"
-  "-DSUNSHINE_ENABLE_KWIN=ON"
+  "-DSUNSHINE_CUDA_LIBRARY_PATH=%{cudadir}/lib"
 )
 cmake "${cmake_args[@]}"
-make -j$(nproc) -C "%{sourcedir}/build"
+make -j$(nproc) -C "build"
 
 %install
 cd %{sourcedir}/build
@@ -160,8 +160,8 @@ then
   ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
 fi
 
-# Add service override to start properly on Gnome
-cp -r %{coprdir}/assets/sunshine.service.d %{buildroot}%{_userunitdir}
+# Install service override to start properly on Gnome
+install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
 
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
@@ -197,10 +197,6 @@ fi
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
-%{_datadir}/icons/hicolor/scalable/apps/*.svg
+%{_datadir}/icons/hicolor/scalable/**/*.svg
 %{_datadir}/metainfo/*.metainfo.xml
 %{_datadir}/sunshine/**
-
-%if "%{releasetype}" == "stable"
-%{_datadir}/icons/hicolor/scalable/status/*.svg
-%endif

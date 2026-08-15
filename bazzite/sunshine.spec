@@ -1,39 +1,17 @@
-# ONLY MAKE CHANGES TO: sunshine.in.spec!
-
-# Create an option to build locally without fetchting own repo
-# for sourcing and patching
-%{!?with_local:%global with_local 0}
-
-# Source repo
-%global author LizardByte
-%global source Sunshine
-%global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2026.808.164219
-%global commit 25c06d79b54f3d092d3fedd5f5ba44989f394692
-%global version 2026.808.164219
-%global releasetype beta
-
-# Copr repo
-%global coprrepo https://github.com/PVermeer/copr_sunshine
-%global coprsource copr_sunshine
-%global coprbranch testing
-
-# Issues ⤵
 %undefine _hardened_build
 
-%if "%{releasetype}" == "stable"
 Name: sunshine
-Conflicts: sunshine-beta
-%endif
-%if "%{releasetype}" == "beta"
-Name: sunshine-beta
-Conflicts: sunshine
-%endif
-Version: %{version}
-Release: 5%{?dist}
+Version: 2026.516.143833
+Release: 1%{?dist}.bazzite
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
-URL: %{sourcerepo}
+URL: https://github.com/LizardByte/Sunshine
+
+Source0: sunshine-service-override.conf
+
+Patch0: disable-std-static-linking.patch
+Patch1: cuda-use-external-deps.patch
+Patch2: disable-codecov.patch
 
 BuildRequires: cmake
 BuildRequires: curl
@@ -63,11 +41,7 @@ BuildRequires: libXrandr-devel
 BuildRequires: python3-jinja2
 BuildRequires: python3-setuptools
 BuildRequires: uv
-# Dep updates stable -> beta and fedora rawhide ⤵
-%if "%{releasetype}" == "stable"
-# fix(linux): migrate to qt tray (#4907) &
-# chore: migrate to qt tray for all platforms (#5260)
-BuildRequires: libappindicator-gtk3-devel 
+BuildRequires: libappindicator-gtk3-devel
 BuildRequires: libnotify-devel
 %if 0%{?fedora} >= 45
 # fix(crypto): OpenSSL 4.x compatibility (#5330)
@@ -75,51 +49,29 @@ BuildRequires: openssl3-devel
 %else
 BuildRequires: openssl-devel
 %endif
-%endif
-%if "%{releasetype}" == "beta"
-# fix(linux): migrate to qt tray (#4907) &
-# chore: migrate to qt tray for all platforms (#5260)
-BuildRequires: qt6-qtbase-devel
-BuildRequires: qt6-qtsvg-devel
-# fix(crypto): OpenSSL 4.x compatibility (#5330)
-BuildRequires: openssl-devel
-%endif
 
 %description
 Self-hosted game stream host for Moonlight.
 
-%define sourcesdir %{_builddir}/sources
-%define sourcedir %{sourcesdir}/%{source}
-%define coprdir %{sourcesdir}/%{coprsource}
+%define sourcedir %{_builddir}/%{name}
 %define cudadir %{_builddir}/cuda-env
 
 %prep
 # Install cuda compiler (nvcc) with mamba (Anaconda packages)
 micromamba create -y -p %{cudadir} conda-forge::cuda-nvcc
 
-# To apply working changes handle sources / patches with local changes.
-# COPR should clone the commited changes.
-%if 0%{?with_local}
-  mkdir -p %{coprdir}
-  cp -r %{_topdir}/SOURCES/. %{coprdir}
-%else
-  git clone --branch %{coprbranch} --single-branch --depth=1 %{coprrepo} %{coprdir}
-%endif
-
-git clone --depth=1 --no-checkout %{sourcerepo} %{sourcedir}
+# Release tarballs are incomplete and cmake is using git commands
+git clone --branch=v%{version} --depth=1 %{url}.git %{sourcedir}
 cd %{sourcedir}
-git fetch --depth=1 origin %{commit}
-git reset --hard %{commit}
 git submodule update --init --depth 1 --recursive
-git apply -v %{coprdir}/patches/%{releasetype}/*.patch
-cd %{_builddir}
+%autopatch -p1
 
 %build
 cd %{sourcedir}
 
 export BRANCH=master
 export BUILD_VERSION=v%{version}
-export COMMIT=%{commit}
+export COMMIT=$(git rev-parse HEAD)
 
 cmake_args=(
   "-B=build"
@@ -138,9 +90,9 @@ cmake_args=(
   "-DSUNSHINE_ENABLE_PORTAL=ON"
   "-DSUNSHINE_ENABLE_VULKAN=ON"
   "-DSUNSHINE_ENABLE_KWIN=ON"
-  "-DSUNSHINE_PUBLISHER_NAME=copr:pvermeer:sunshine"
-  "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine"
-  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues"
+  "-DSUNSHINE_PUBLISHER_NAME=copr:ublue-os:bazzite"
+  "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/ublue-os/bazzite/sunshine"
+  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/ublue-os/bazzite/issues"
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
@@ -161,7 +113,7 @@ then
 fi
 
 # Install service override to start properly on Gnome
-install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
+install -Dm0644 %{SOURCE0} %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
 
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
