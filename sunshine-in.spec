@@ -160,8 +160,8 @@ then
   ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
 fi
 
-# Add service override to start properly on Gnome
-cp -r %{coprdir}/assets/sunshine.service.d %{buildroot}%{_userunitdir}
+# Install service override to start properly on Gnome
+install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
 
 %check
 if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
