@@ -197,10 +197,6 @@ fi
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
-%{_datadir}/icons/hicolor/scalable/apps/*.svg
+%{_datadir}/icons/hicolor/scalable/**/*.svg
 %{_datadir}/metainfo/*.metainfo.xml
 %{_datadir}/sunshine/**
-
-%if "%{releasetype}" == "stable"
-%{_datadir}/icons/hicolor/scalable/status/*.svg
-%endif
