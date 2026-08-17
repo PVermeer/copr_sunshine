@@ -8,15 +8,15 @@
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2026.808.164219
-%global commit 25c06d79b54f3d092d3fedd5f5ba44989f394692
-%global version 2026.808.164219
+%global tag v2026.816.192458
+%global commit 687e12d013a838e1769ffdf996eb1d5ef8402660
+%global version 2026.816.192458
 %global releasetype beta
 
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
-%global coprbranch testing
+%global coprbranch main
 
 # Issues ⤵
 %undefine _hardened_build
