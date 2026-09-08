@@ -30,7 +30,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 5%{?dist}
+Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{sourcerepo}
@@ -63,26 +63,13 @@ BuildRequires: libXrandr-devel
 BuildRequires: python3-jinja2
 BuildRequires: python3-setuptools
 BuildRequires: uv
-# Dep updates stable -> beta and fedora rawhide ⤵
-%if "%{releasetype}" == "stable"
-# fix(linux): migrate to qt tray (#4907) &
-# chore: migrate to qt tray for all platforms (#5260)
-BuildRequires: libappindicator-gtk3-devel 
-BuildRequires: libnotify-devel
-%if 0%{?fedora} >= 45
-# fix(crypto): OpenSSL 4.x compatibility (#5330)
-BuildRequires: openssl3-devel
-%else
-BuildRequires: openssl-devel
-%endif
-%endif
-%if "%{releasetype}" == "beta"
-# fix(linux): migrate to qt tray (#4907) &
-# chore: migrate to qt tray for all platforms (#5260)
 BuildRequires: qt6-qtbase-devel
 BuildRequires: qt6-qtsvg-devel
-# fix(crypto): OpenSSL 4.x compatibility (#5330)
 BuildRequires: openssl-devel
+# Dep updates stable -> beta and fedora rawhide ⤵
+%if "%{releasetype}" == "stable"
+%endif
+%if "%{releasetype}" == "beta"
 %endif
 
 %description

@@ -3,4 +3,4 @@
 	url = https://github.com/PVermeer/rpm-tools.git
 [submodule "Sunshine"]
 	path = Sunshine
-	url = https://github.com/LizardByte/Sunshine.git
+	url = https://github.com/LizardByte/Sunshine

@@ -8,9 +8,9 @@
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2026.516.143833
-%global commit 14ffa6fdaa53f7b51512be2b3d24f3939695403c
-%global version 2026.516.143833
+%global tag v2026.906.222525
+%global commit cb72dffa3233c5815cd5ba88f09f049dd679ba75
+%global version 2026.906.222525
 %global releasetype stable
 
 # Copr repo
@@ -30,7 +30,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 5%{?dist}
+Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{sourcerepo}
@@ -63,26 +63,13 @@ BuildRequires: libXrandr-devel
 BuildRequires: python3-jinja2
 BuildRequires: python3-setuptools
 BuildRequires: uv
-# Dep updates stable -> beta and fedora rawhide ⤵
-%if "%{releasetype}" == "stable"
-# fix(linux): migrate to qt tray (#4907) &
-# chore: migrate to qt tray for all platforms (#5260)
-BuildRequires: libappindicator-gtk3-devel 
-BuildRequires: libnotify-devel
-%if 0%{?fedora} >= 45
-# fix(crypto): OpenSSL 4.x compatibility (#5330)
-BuildRequires: openssl3-devel
-%else
-BuildRequires: openssl-devel
-%endif
-%endif
-%if "%{releasetype}" == "beta"
-# fix(linux): migrate to qt tray (#4907) &
-# chore: migrate to qt tray for all platforms (#5260)
 BuildRequires: qt6-qtbase-devel
 BuildRequires: qt6-qtsvg-devel
-# fix(crypto): OpenSSL 4.x compatibility (#5330)
 BuildRequires: openssl-devel
+# Dep updates stable -> beta and fedora rawhide ⤵
+%if "%{releasetype}" == "stable"
+%endif
+%if "%{releasetype}" == "beta"
 %endif
 
 %description
