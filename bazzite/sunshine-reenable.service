@@ -1,0 +1,22 @@
+[Unit]
+Description=Re-enable Sunshine after service update
+ConditionPathExists=/usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service
+ConditionPathExists=/usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service.d/override.conf
+
+[Service]
+Type=oneshot
+ExecCondition=/usr/bin/systemctl --user is-enabled --quiet app-dev.lizardbyte.app.Sunshine.service
+# Check for unit file changes with a stamp file
+ExecCondition=/usr/bin/bash -c '\
+  stamp="%h/.local/state/sunshine/reenable.stamp"; \
+  service="/usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service"; \
+  override="/usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service.d/override.conf"; \
+  ! test -e "$stamp" || \
+  ! test "$service" -ot "$stamp" || \
+  ! test "$override" -ot "$stamp"'
+ExecStart=/usr/bin/systemctl --user reenable app-dev.lizardbyte.app.Sunshine.service
+ExecStartPost=/usr/bin/mkdir -p %h/.local/state/sunshine
+ExecStartPost=/usr/bin/touch %h/.local/state/sunshine/reenable.stamp
+
+[Install]
+WantedBy=default.target

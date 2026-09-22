@@ -78,6 +78,9 @@ Self-hosted game stream host for Moonlight.
 
 %define service_file app-dev.lizardbyte.app.Sunshine.service
 %define service_alias sunshine.service
+%define service_override sunshine-service-override.conf
+%define reenable_service sunshine-reenable.service
+%define reenable_preset 90-sunshine-reenable.preset
 
 %define sourcesdir %{_builddir}/sources
 %define sourcedir %{sourcesdir}/%{source}
@@ -119,7 +122,7 @@ cmake_args=(
   "-DCMAKE_BUILD_TYPE=Release"
   "-DSUNSHINE_PUBLISHER_NAME=copr:pvermeer:sunshine"
   "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine"
-  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues" 
+  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues"
   "-DCMAKE_INSTALL_PREFIX=%{_prefix}"
   "-DSUNSHINE_ASSETS_DIR=%{_datadir}/sunshine"
   "-DSUNSHINE_EXECUTABLE_PATH=%{_bindir}/sunshine"
@@ -154,26 +157,27 @@ then
 fi
 
 # Install service overrides to start properly on more targets
-install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/%{service_file}.d/override.conf
-install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/%{service_alias}.d/override.conf
+install -Dm0644 %{coprdir}/sources/%{service_override} %{buildroot}%{_userunitdir}/%{service_file}.d/override.conf
+install -Dm0644 %{coprdir}/sources/%{service_override} %{buildroot}%{_userunitdir}/%{service_alias}.d/override.conf
+
+# Re-enable Sunshine for users who already have it enabled when the user service changes.
+install -Dm0644 %{coprdir}/sources/%{reenable_service} %{buildroot}%{_userunitdir}/%{reenable_service}
+install -Dm0644 %{coprdir}/sources/%{reenable_preset} %{buildroot}%{_userpresetdir}/%{reenable_preset}
 
 %check
-if [ ! -f %{buildroot}%{_userunitdir}/%{service_alias} ]; then
-  echo "Error: missing %{service_alias}" >&2
-  exit 1
-fi
-if [ ! -f %{buildroot}%{_userunitdir}/%{service_file} ]; then
-  echo "Error: missing %{service_file}" >&2
-  exit 1
-fi
-if [ ! -f %{buildroot}%{_userunitdir}/%{service_alias}.d/override.conf ]; then
-  echo "Error: missing %{service_alias}.d/override.conf" >&2
-  exit 1
-fi
-if [ ! -f %{buildroot}%{_userunitdir}/%{service_file}.d/override.conf ]; then
-  echo "Error: missing %{service_file}.d/override.conf" >&2
-  exit 1
-fi
+for file in \
+  "%{_userunitdir}/%{service_alias}" \
+  "%{_userunitdir}/%{service_file}" \
+  "%{_userunitdir}/%{service_alias}.d/override.conf" \
+  "%{_userunitdir}/%{service_file}.d/override.conf" \
+  "%{_userunitdir}/%{reenable_service}" \
+  "%{_userpresetdir}/%{reenable_preset}"
+do
+  if [ ! -f "%{buildroot}${file}" ]; then
+    echo "Error: missing ${file}" >&2
+    exit 1
+  fi
+done
 
 %post
 if ! command -v rpm-ostree >/dev/null 2>&1; then
@@ -182,15 +186,18 @@ if ! command -v rpm-ostree >/dev/null 2>&1; then
   udevadm trigger || :
 fi
 %systemd_user_post %{service_alias}
+%systemd_user_post %{reenable_service}
 
 %preun
 %systemd_user_preun %{service_alias}
+%systemd_user_preun %{reenable_service}
 
 %postun
 if ! command -v rpm-ostree >/dev/null 2>&1; then
   udevadm control --reload-rules || :
 fi
 %systemd_user_postun_with_restart %{service_alias}
+%systemd_user_postun_with_restart %{reenable_service}
 
 %files
 %caps(cap_sys_admin,cap_sys_nice+p) %{_bindir}/sunshine
@@ -198,6 +205,8 @@ fi
 %{_userunitdir}/%{service_file}
 %{_userunitdir}/%{service_alias}.d/override.conf
 %{_userunitdir}/%{service_file}.d/override.conf
+%{_userunitdir}/%{reenable_service}
+%{_userpresetdir}/%{reenable_preset}
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
