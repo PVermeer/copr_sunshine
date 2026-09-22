@@ -1,11 +1,11 @@
 diff --git a/vite.config.js b/vite.config.js
-index 1f501eb2..d24f1c29 100644
+index 3ccab545..3407c06a 100644
 --- a/vite.config.js
 +++ b/vite.config.js
-@@ -53,15 +53,6 @@ export default defineConfig({
+@@ -64,15 +64,6 @@ export default defineConfig({
      plugins: [
          vue(),
-         ViteEjsPlugin({ header }),
+         emitTrayIconsPlugin,
 -        // The Codecov vite plugin should be after all other plugins
 -        codecovVitePlugin({
 -            enableBundleAnalysis: true,
