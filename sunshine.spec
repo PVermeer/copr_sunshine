@@ -66,6 +66,7 @@ BuildRequires: uv
 BuildRequires: qt6-qtbase-devel
 BuildRequires: qt6-qtsvg-devel
 BuildRequires: openssl-devel
+BuildRequires: boost-devel
 # Dep updates stable -> beta and fedora rawhide ⤵
 %if "%{releasetype}" == "stable"
 %endif
@@ -115,6 +116,7 @@ cmake_args=(
   "-DBUILD_DOCS=OFF"
   "-DBUILD_TESTS=OFF"
   "-DBUILD_WERROR=OFF"
+  "-DBOOST_USE_STATIC=OFF"
   "-DCMAKE_BUILD_TYPE=Release"
   "-DCMAKE_INSTALL_PREFIX=%{_prefix}"
   "-DSUNSHINE_ASSETS_DIR=%{_datadir}/sunshine"
@@ -125,13 +127,14 @@ cmake_args=(
   "-DSUNSHINE_ENABLE_PORTAL=ON"
   "-DSUNSHINE_ENABLE_VULKAN=ON"
   "-DSUNSHINE_ENABLE_KWIN=ON"
-  "-DSUNSHINE_PUBLISHER_NAME=copr:pvermeer:sunshine"
-  "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine"
-  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues"
+  "-DSUNSHINE_ENABLE_VAAPI=ON"
   "-DSUNSHINE_ENABLE_CUDA=ON"
   "-DCMAKE_CUDA_COMPILER=%{cudadir}/bin/nvcc"
   "-DCMAKE_CUDA_HOST_COMPILER=%{cudadir}/bin/%{_arch}-conda-linux-gnu-g++"
   "-DSUNSHINE_CUDA_LIBRARY_PATH=%{cudadir}/lib"
+  "-DSUNSHINE_PUBLISHER_NAME=copr:pvermeer:sunshine"
+  "-DSUNSHINE_PUBLISHER_WEBSITE=https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine"
+  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/PVermeer/copr_sunshine/issues"
 )
 cmake "${cmake_args[@]}"
 make -j$(nproc) -C "build"
