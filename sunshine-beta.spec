@@ -76,6 +76,9 @@ BuildRequires: boost-devel
 %description
 Self-hosted game stream host for Moonlight.
 
+%define service_file app-dev.lizardbyte.app.Sunshine.service
+%define service_alias sunshine.service
+
 %define sourcesdir %{_builddir}/sources
 %define sourcedir %{sourcesdir}/%{source}
 %define coprdir %{sourcesdir}/%{coprsource}
@@ -144,22 +147,31 @@ cd %{sourcedir}/build
 %make_install
 
 # Keep old service with symlink
-if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ] \
-  && [ -f %{buildroot}%{_userunitdir}/app-dev.lizardbyte.app.Sunshine.service ]; \
+if [ ! -f %{buildroot}%{_userunitdir}/%{service_alias} ] \
+  && [ -f %{buildroot}%{_userunitdir}/%{service_file} ]; \
 then
-  ln -s app-dev.lizardbyte.app.Sunshine.service %{buildroot}%{_userunitdir}/sunshine.service
+  ln -s %{service_file} %{buildroot}%{_userunitdir}/%{service_alias}
 fi
 
-# Install service override to start properly on Gnome
-install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf
+# Install service overrides to start properly on more targets
+install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/%{service_file}.d/override.conf
+install -Dm0644 %{coprdir}/sources/sunshine-service-override.conf %{buildroot}%{_userunitdir}/%{service_alias}.d/override.conf
 
 %check
-if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service ]; then
-  echo "Error: missing sunshine.service" >&2
+if [ ! -f %{buildroot}%{_userunitdir}/%{service_alias} ]; then
+  echo "Error: missing %{service_alias}" >&2
   exit 1
 fi
-if [ ! -f %{buildroot}%{_userunitdir}/sunshine.service.d/override.conf ]; then
-  echo "Error: missing sunshine.service.d/override.conf" >&2
+if [ ! -f %{buildroot}%{_userunitdir}/%{service_file} ]; then
+  echo "Error: missing %{service_file}" >&2
+  exit 1
+fi
+if [ ! -f %{buildroot}%{_userunitdir}/%{service_alias}.d/override.conf ]; then
+  echo "Error: missing %{service_alias}.d/override.conf" >&2
+  exit 1
+fi
+if [ ! -f %{buildroot}%{_userunitdir}/%{service_file}.d/override.conf ]; then
+  echo "Error: missing %{service_file}.d/override.conf" >&2
   exit 1
 fi
 
@@ -169,21 +181,23 @@ if ! command -v rpm-ostree >/dev/null 2>&1; then
   udevadm control --reload-rules || :
   udevadm trigger || :
 fi
-%systemd_user_post sunshine.service
+%systemd_user_post %{service_alias}
 
 %preun
-%systemd_user_preun sunshine.service
+%systemd_user_preun %{service_alias}
 
 %postun
 if ! command -v rpm-ostree >/dev/null 2>&1; then
   udevadm control --reload-rules || :
 fi
-%systemd_user_postun_with_restart sunshine.service
+%systemd_user_postun_with_restart %{service_alias}
 
 %files
 %caps(cap_sys_admin,cap_sys_nice+p) %{_bindir}/sunshine
-%{_userunitdir}/*.service
-%{_userunitdir}/sunshine.service.d/override.conf
+%{_userunitdir}/%{service_alias}
+%{_userunitdir}/%{service_file}
+%{_userunitdir}/%{service_alias}.d/override.conf
+%{_userunitdir}/%{service_file}.d/override.conf
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
