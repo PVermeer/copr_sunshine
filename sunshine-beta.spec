@@ -80,7 +80,6 @@ Self-hosted game stream host for Moonlight.
 %define service_alias sunshine.service
 %define service_override sunshine-service-override.conf
 %define reenable_service sunshine-reenable.service
-%define reenable_preset 90-sunshine-reenable.preset
 
 %define sourcesdir %{_builddir}/sources
 %define sourcedir %{sourcesdir}/%{source}
@@ -162,7 +161,6 @@ install -Dm0644 %{coprdir}/sources/%{service_override} %{buildroot}%{_userunitdi
 
 # Re-enable Sunshine for users who already have it enabled when the user service changes.
 install -Dm0644 %{coprdir}/sources/%{reenable_service} %{buildroot}%{_userunitdir}/%{reenable_service}
-install -Dm0644 %{coprdir}/sources/%{reenable_preset} %{buildroot}%{_userpresetdir}/%{reenable_preset}
 
 %check
 for file in \
@@ -170,8 +168,7 @@ for file in \
   "%{_userunitdir}/%{service_file}" \
   "%{_userunitdir}/%{service_alias}.d/override.conf" \
   "%{_userunitdir}/%{service_file}.d/override.conf" \
-  "%{_userunitdir}/%{reenable_service}" \
-  "%{_userpresetdir}/%{reenable_preset}"
+  "%{_userunitdir}/%{reenable_service}"
 do
   if [ ! -f "%{buildroot}${file}" ]; then
     echo "Error: missing ${file}" >&2
@@ -206,7 +203,6 @@ fi
 %{_userunitdir}/%{service_alias}.d/override.conf
 %{_userunitdir}/%{service_file}.d/override.conf
 %{_userunitdir}/%{reenable_service}
-%{_userpresetdir}/%{reenable_preset}
 %{_udevrulesdir}/*-sunshine.rules
 %{_modulesloaddir}/*-sunshine.conf
 %{_datadir}/applications/*.desktop
