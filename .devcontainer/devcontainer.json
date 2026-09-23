@@ -2,7 +2,7 @@
 {
 	"name": "Fedora",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "rpm.Dockerfile"
 	},
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {
@@ -38,7 +38,8 @@
 				"RVSmartPorting.rpm-spec-ext",
 				"IronGeek.vscode-env",
 				"github.vscode-github-actions",
-				"ms-vscode.cmake-tools"
+				"ms-vscode.cmake-tools",
+				"coolbear.systemd-unit-file"
 			]
 		}
 	}

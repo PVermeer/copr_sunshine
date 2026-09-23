@@ -1,0 +1,23 @@
+[Unit]
+Description=Re-enable Sunshine after service update
+ConditionPathExists=/usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service
+ConditionPathExists=/usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service.d/override.conf
+
+[Service]
+Type=oneshot
+ExecCondition=/usr/bin/systemctl --user is-enabled --quiet app-dev.lizardbyte.app.Sunshine.service
+# Check for unit file changes with a state file
+ExecCondition=/usr/bin/bash -c '\
+  state="%h/.local/state/sunshine/reenable.state"; \
+  [[ ! -f "$state" ]] || ! /usr/bin/cmp -s "$state" <( \
+    /usr/bin/sha256sum \
+      /usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service \
+      /usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service.d/override.conf \
+  )'
+ExecStart=/usr/bin/systemctl --user reenable app-dev.lizardbyte.app.Sunshine.service
+# Record the hashes after a successful re-enable.
+ExecStartPost=/usr/bin/mkdir -p %h/.local/state/sunshine
+ExecStartPost=/usr/bin/bash -c '/usr/bin/sha256sum \
+  /usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service \
+  /usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service.d/override.conf \
+  > "%h/.local/state/sunshine/reenable.state"'
