@@ -16,7 +16,7 @@
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
-%global coprbranch main
+%global coprbranch testing
 
 # Issues ⤵
 %undefine _hardened_build
