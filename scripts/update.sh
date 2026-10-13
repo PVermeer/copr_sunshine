@@ -227,17 +227,10 @@ update_spec_file() {
 	fi
 }
 
-update_bazzite_sources() {
-	cp ./sources/* ./bazzite/
-	cp ./patches/stable/* ./bazzite/
-}
-
 update_rpm_releases=("$release_type")
 if [ "$release_type" = "all" ]; then
 	update_rpm_releases=("stable" "beta")
 fi
-
-update_bazzite_sources
 
 for release_type in "${update_rpm_releases[@]}"; do
 
