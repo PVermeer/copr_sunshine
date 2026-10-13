@@ -8,15 +8,15 @@
 %global author LizardByte
 %global source Sunshine
 %global sourcerepo https://github.com/LizardByte/Sunshine
-%global tag v2026.921.13701
-%global commit 0e87c4212c81f6828d8cd3f44c85f4f855207bb0
-%global version 2026.921.13701
+%global tag v2026.1011.160319
+%global commit d1fc311f6b65634b226e51549f9102a2bfb7764b
+%global version 2026.1011.160319
 %global releasetype beta
 
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
-%global coprbranch testing
+%global coprbranch main
 
 # Issues ⤵
 %undefine _hardened_build
@@ -30,7 +30,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{sourcerepo}

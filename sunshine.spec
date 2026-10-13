@@ -16,7 +16,7 @@
 # Copr repo
 %global coprrepo https://github.com/PVermeer/copr_sunshine
 %global coprsource copr_sunshine
-%global coprbranch testing
+%global coprbranch main
 
 # Issues ⤵
 %undefine _hardened_build
@@ -30,7 +30,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{sourcerepo}
