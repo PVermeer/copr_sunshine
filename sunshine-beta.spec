@@ -30,7 +30,7 @@ Name: sunshine-beta
 Conflicts: sunshine
 %endif
 Version: %{version}
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
 URL: %{sourcerepo}
@@ -71,6 +71,12 @@ BuildRequires: boost-devel
 %if "%{releasetype}" == "stable"
 %endif
 %if "%{releasetype}" == "beta"
+%endif
+%if 0%{?fedora} == 43
+# Build started failing in this chroot, just temporarly add the missing dep until chroot is eol.
+# There are 142 changed files with 6,155 additions and 1,313 deletions between the previous commit...
+# Check https://programmerhumor.io/memes/over-engineering for more info!
+BuildRequires: libatomic
 %endif
 
 %description
