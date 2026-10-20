@@ -6,10 +6,7 @@
         {
             "label": "Build rpm all",
             "type": "shell",
-            "command": "./rpm-tool",
-            "args": [
-                "--local-all",
-            ],
+            "command": "./rpm-tool --local-all 2>&1 | tee build-all.log",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -19,10 +16,7 @@
         {
             "label": "Build rpm stable",
             "type": "shell",
-            "command": "./rpm-tool",
-            "args": [
-                "--build-stable",
-            ],
+            "command": "./rpm-tool --build-stable 2>&1 | tee build-stable.log",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -32,10 +26,7 @@
         {
             "label": "Build rpm beta",
             "type": "shell",
-            "command": "./rpm-tool",
-            "args": [
-                "--build-beta",
-            ],
+            "command": "./rpm-tool --build-beta 2>&1 | tee build-beta.log",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -45,10 +36,7 @@
         {
             "label": "COPR test all",
             "type": "shell",
-            "command": "./rpm-tool",
-            "args": [
-                "--copr-all-test",
-            ],
+            "command": "./rpm-tool --copr-all-test",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -58,10 +46,7 @@
         {
             "label": "COPR live all",
             "type": "shell",
-            "command": "./rpm-tool",
-            "args": [
-                "--copr-all-live",
-            ],
+            "command": "./rpm-tool --copr-all-live",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

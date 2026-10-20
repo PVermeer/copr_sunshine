@@ -1,0 +1,434 @@
+# https://github.com/LizardByte/libvirtualhid
+# Fix(linux): keep virtual Xbox controllers on hid-generic PR 192
+# Fix for Xbox 360 controllers GUIDE+<some key> fails Issue 191
+#
+# Commented out failing doc changes
+
+From ea46aa173e3edff6e471da62ff657bdac62957a7 Mon Sep 17 00:00:00 2001
+From: ReenigneArcher <42013603+ReenigneArcher@users.noreply.github.com>
+Date: Wed, 14 Oct 2026 15:15:11 -0400
+Subject: [PATCH] fix(linux): keep virtual Xbox controllers on hid-generic
+
+Mark the upper word of the UHID vendor ID to prevent xpadneo and its udev rules from claiming virtual Xbox One and Series devices. Preserve the consumer-visible Xbox identity, Guide chords, trigger rumble, and battery reporting.
+
+Add kernel identity assertions and SDL2/SDL3 Guide chord regression coverage. Validate with 144 unit tests and five native consumer tests with xpadneo Guide shift mode enabled.
+
+Fixes #191
+---
+ docs/platform-support.md                      |  6 ++
+ src/platform/linux/uhid_backend.cpp           | 21 +++-
+ tests/consumers/linux_sdl3_xbox_consumer.cpp  | 98 +++++++++++++++++++
+ .../fixtures/linux_backend_test_hooks.hpp     |  8 +-
+ tests/fixtures/linux_backend_test_hooks.cpp   |  4 +-
+ tests/unit/test_linux_backend.cpp             |  8 ++
+ tests/unit/test_linux_consumers.cpp           | 98 ++++++++++++++++++-
+ 7 files changed, 234 insertions(+), 9 deletions(-)
+
+# diff --git a/docs/platform-support.md b/docs/platform-support.md
+# index 2dd97cfd..e973373e 100644
+# --- a/docs/platform-support.md
+# +++ b/docs/platform-support.md
+# @@ -67,6 +67,12 @@ sudo udevadm trigger --subsystem-match=input
+#  The consuming user may need membership in the `input` group and a new login
+#  session. Desktop logins may instead receive access through `uaccess`.
+ 
+# +Virtual Xbox One and Series controllers use `uhid` with a kernel-only vendor
+# +marker so physical-controller drivers such as `xpadneo` cannot intercept
+# +Guide-button chords. SDL and the evdev/hidraw interfaces retain the Xbox
+# +vendor and product IDs. Trigger rumble and battery reporting remain available;
+# +no change to xpadneo's physical-controller settings is required.
+# +
+#  ## FreeBSD
+ 
+ The `uinput` kernel module and a writable `/dev/input/uinput` or
+diff --git a/src/platform/linux/uhid_backend.cpp b/src/platform/linux/uhid_backend.cpp
+index 4d2e819b..adb110dc 100644
+--- a/third-party/libvirtualhid/src/platform/linux/uhid_backend.cpp
++++ b/third-party/libvirtualhid/src/platform/linux/uhid_backend.cpp
+@@ -384,6 +384,25 @@ namespace lvh::detail {
+     }
+ 
+ #if defined(__linux__)
++    /**
++     * @brief Select a kernel HID vendor identity that keeps virtual Xbox devices on hid-generic.
++     *
++     * Linux matches HID drivers and names their sysfs devices using 32-bit vendor
++     * IDs. Mark the upper word so physical Xbox drivers and xpadneo's udev rules
++     * cannot claim these devices and consume Guide chords. The evdev and hidraw
++     * ABIs, including SDL HIDAPI's uevent parser, expose the original lower
++     * 16-bit vendor ID, preserving Xbox discovery, rumble, and battery reports.
++     *
++     * @param profile UHID transport profile.
++     * @return Kernel vendor ID with the virtual marker for Xbox One and Series.
++     */
++    std::uint32_t uhid_vendor_id(const DeviceProfile &profile) {
++      constexpr std::uint32_t virtual_xbox_vendor_marker = 0x00010000U;
++      return is_xbox_uhid_profile(profile.gamepad_kind) ?
++               virtual_xbox_vendor_marker | profile.vendor_id :
++               profile.vendor_id;
++    }
++
+     std::uint16_t to_uhid_bus(const DeviceProfile &profile) {
+       // Linux SDL2 HIDAPI requires BUS_USB hidraw devices to have a physical USB
+       // parent in sysfs. UHID devices do not, so expose transports handled by
+@@ -3162,7 +3181,7 @@ namespace lvh::detail {
+         copy_string(request.uniq, unique_id_);
+         request.rd_size = static_cast<std::uint16_t>(transport_profile.report_descriptor.size());
+         request.bus = to_uhid_bus(transport_profile);
+-        request.vendor = transport_profile.vendor_id;
++        request.vendor = uhid_vendor_id(transport_profile);
+         request.product = transport_profile.product_id;
+         request.version = transport_profile.version;
+         std::memcpy(
+diff --git a/tests/consumers/linux_sdl3_xbox_consumer.cpp b/tests/consumers/linux_sdl3_xbox_consumer.cpp
+index 8a7f0b82..378c0b8c 100644
+--- a/third-party/libvirtualhid/tests/consumers/linux_sdl3_xbox_consumer.cpp
++++ b/third-party/libvirtualhid/tests/consumers/linux_sdl3_xbox_consumer.cpp
+@@ -23,6 +23,10 @@
+ #include <utility>
+ 
+ // platform includes
++#include <fcntl.h>
++#include <linux/hidraw.h>
++#include <linux/input.h>
++#include <sys/ioctl.h>
+ #include <unistd.h>
+ 
+ // lib includes
+@@ -213,6 +217,43 @@ namespace {
+     return false;
+   }
+ 
++  /**
++   * @brief Verify kernel driver isolation and the consumer-visible Xbox HID identity.
++   *
++   * @param gamepad Virtual gamepad with an accessible hidraw node.
++   * @param test_case Expected Xbox transport identity.
++   * @return Whether hid-generic owns the marked device and hidraw retains the Xbox IDs.
++   */
++  bool validate_kernel_identity(const lvh::Gamepad &gamepad, const ProfileCase &test_case) {
++    for (const auto &node : gamepad.device_nodes()) {
++      if (node.kind != lvh::DeviceNodeKind::hidraw) {
++        continue;
++      }
++      const auto fd = ::open(node.path.c_str(), O_RDONLY | O_CLOEXEC);
++      if (fd < 0) {
++        return false;
++      }
++      hidraw_devinfo info {};
++      const auto status = ::ioctl(fd, HIDIOCGRAWINFO, &info);
++      ::close(fd);
++      if (status < 0 || info.bustype != BUS_BLUETOOTH || info.vendor != 0x045E || info.product != test_case.product_id) {
++        return false;
++      }
++
++      std::error_code error;
++      const auto hid_device = std::filesystem::canonical(
++        std::filesystem::path {"/sys/class/hidraw"} / std::filesystem::path {node.path}.filename() / "device",
++        error
++      );
++      if (error || !hid_device.filename().string().starts_with("0005:1045E:")) {
++        return false;
++      }
++      const auto driver = std::filesystem::canonical(hid_device / "driver", error);
++      return !error && driver.filename() == "hid-generic";
++    }
++    return false;
++  }
++
+   SDL_JoystickID wait_for_gamepad(const ProfileCase &test_case) {
+     const auto deadline = std::chrono::steady_clock::now() + 5s;
+     while (std::chrono::steady_clock::now() < deadline) {
+@@ -362,6 +403,53 @@ namespace {
+     return EXIT_SUCCESS;
+   }
+ 
++  /**
++   * @brief Check that SDL receives both chord buttons and their independent releases.
++   *
++   * @param virtual_gamepad Virtual Xbox controller submitting input.
++   * @param gamepad SDL consumer of the virtual controller.
++   * @param logical_button Button held together with Guide.
++   * @param sdl_button Corresponding SDL button.
++   * @return EXIT_SUCCESS when the complete chord sequence is observed.
++   */
++  int validate_guide_chord(
++    lvh::Gamepad &virtual_gamepad,
++    SDL_Gamepad *gamepad,
++    lvh::GamepadButton logical_button,
++    SDL_GamepadButton sdl_button
++  ) {
++    lvh::GamepadState state;
++    state.buttons.set(guide);
++    if (!virtual_gamepad.submit(state).ok() || !wait_for_button(gamepad, SDL_GAMEPAD_BUTTON_GUIDE, true)) {
++      return fail("SDL3 did not receive the held Guide button");
++    }
++
++    state.buttons.set(logical_button);
++    if (!virtual_gamepad.submit(state).ok() || !wait_for_button(gamepad, sdl_button, true) || !SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_GUIDE)) {
++      return fail("SDL3 did not receive both Guide chord buttons");
++    }
++
++    state.buttons.set(guide, false);
++    if (!virtual_gamepad.submit(state).ok() || !wait_for_button(gamepad, SDL_GAMEPAD_BUTTON_GUIDE, false) || !SDL_GetGamepadButton(gamepad, sdl_button)) {
++      return fail("SDL3 did not preserve the other button when Guide was released");
++    }
++
++    state.buttons.set(guide);
++    if (!virtual_gamepad.submit(state).ok() || !wait_for_button(gamepad, SDL_GAMEPAD_BUTTON_GUIDE, true) || !SDL_GetGamepadButton(gamepad, sdl_button)) {
++      return fail("SDL3 did not receive Guide while the other chord button was held");
++    }
++
++    state.buttons.set(logical_button, false);
++    if (!virtual_gamepad.submit(state).ok() || !wait_for_button(gamepad, sdl_button, false) || !SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_GUIDE)) {
++      return fail("SDL3 did not preserve Guide when the other chord button was released");
++    }
++
++    if (!virtual_gamepad.submit({}).ok() || !wait_for_button(gamepad, SDL_GAMEPAD_BUTTON_GUIDE, false)) {
++      return fail("SDL3 did not release Guide at the end of the chord");
++    }
++    return EXIT_SUCCESS;
++  }
++
+   int validate_buttons(lvh::Gamepad &virtual_gamepad, SDL_Gamepad *gamepad, const ProfileCase &test_case) {
+     for (const auto &[logical_button, sdl_button] : button_cases) {
+       lvh::GamepadState state;
+@@ -376,6 +464,12 @@ namespace {
+       }
+     }
+ 
++    for (const auto &[logical_button, sdl_button] : button_cases) {
++      if (logical_button != guide && validate_guide_chord(virtual_gamepad, gamepad, logical_button, sdl_button) != EXIT_SUCCESS) {
++        return fail(std::format("SDL3 Guide chord failed for logical button {}", std::to_underlying(logical_button)));
++      }
++    }
++
+     if (test_case.profile.gamepad_kind == lvh::GamepadProfileKind::xbox_series) {
+       lvh::GamepadState state;
+       state.buttons.set(misc1);
+@@ -496,6 +590,10 @@ namespace {
+       log_kernel_hid_state();
+       return fail("The Xbox UHID device did not expose an accessible hidraw node");
+     }
++    if (!validate_kernel_identity(*created.gamepad, test_case)) {
++      log_kernel_hid_state();
++      return fail("The virtual Xbox device did not retain hid-generic and the consumer HID identity");
++    }
+ 
+     const auto output = std::make_shared<OutputCapture>();
+     created.gamepad->set_output_callback([output](const lvh::GamepadOutput &gamepad_output) {
+diff --git a/tests/fixtures/include/fixtures/linux_backend_test_hooks.hpp b/tests/fixtures/include/fixtures/linux_backend_test_hooks.hpp
+index 4da00705..0f9d21a0 100644
+--- a/third-party/libvirtualhid/tests/fixtures/include/fixtures/linux_backend_test_hooks.hpp
++++ b/third-party/libvirtualhid/tests/fixtures/include/fixtures/linux_backend_test_hooks.hpp
+@@ -142,14 +142,14 @@ namespace lvh::detail::test {
+     std::uint16_t bus = 0;
+ 
+     /**
+-     * @brief USB vendor id carried by the observed create event.
++     * @brief Full kernel HID vendor id carried by the observed create event.
+      */
+-    std::uint16_t vendor_id = 0;
++    std::uint32_t vendor_id = 0;
+ 
+     /**
+-     * @brief USB product id carried by the observed create event.
++     * @brief Full kernel HID product id carried by the observed create event.
+      */
+-    std::uint16_t product_id = 0;
++    std::uint32_t product_id = 0;
+ 
+     /**
+      * @brief Device version carried by the observed create event.
+diff --git a/tests/fixtures/linux_backend_test_hooks.cpp b/tests/fixtures/linux_backend_test_hooks.cpp
+index 9eedfe9c..dc3a0132 100644
+--- a/third-party/libvirtualhid/tests/fixtures/linux_backend_test_hooks.cpp
++++ b/third-party/libvirtualhid/tests/fixtures/linux_backend_test_hooks.cpp
+@@ -762,7 +762,7 @@ namespace lvh::detail::test {
+       );
+       if (result.creation.saw_create) {
+         const auto transport_profile = uhid_transport_profile(options.profile, options.metadata.has_battery);
+-        result.creation.saw_create = event.u.create2.vendor == transport_profile.vendor_id &&
++        result.creation.saw_create = event.u.create2.vendor == uhid_vendor_id(transport_profile) &&
+                                      event.u.create2.product == transport_profile.product_id &&
+                                      event.u.create2.version == transport_profile.version &&
+                                      event.u.create2.bus == expected_bus;
+@@ -1790,7 +1790,7 @@ namespace lvh::detail::test {
+         event.u.create2.rd_data[1] == 0x01U && event.u.create2.rd_data[2] == 0x09U &&
+         event.u.create2.rd_data[3] == 0x05U;
+       result.xbox.saw_bluetooth_identity =
+-        event.u.create2.vendor == 0x045EU &&
++        static_cast<std::uint16_t>(event.u.create2.vendor) == 0x045EU &&
+         event.u.create2.product == (series ? xbox_series_uinput_product_id : xbox_wireless_uinput_product_id) &&
+         event.u.create2.version == xbox_bluetooth_version && event.u.create2.bus == BUS_BLUETOOTH;
+     }
+diff --git a/tests/unit/test_linux_backend.cpp b/tests/unit/test_linux_backend.cpp
+index f388526b..e442006c 100644
+--- a/third-party/libvirtualhid/tests/unit/test_linux_backend.cpp
++++ b/third-party/libvirtualhid/tests/unit/test_linux_backend.cpp
+@@ -955,6 +955,12 @@ TEST_F(LinuxBackendTest, XboxOneAndSeriesPreferBluetoothUhidWithUinputFallback)
+     EXPECT_TRUE(result.creation.saw_create);
+     EXPECT_TRUE(result.creation.waited_for_start);
+     EXPECT_TRUE(result.xbox.saw_transport_descriptor);
++    // The kernel must not match Microsoft's physical-device driver IDs, while
++    // the 16-bit input and hidraw identities must still identify an Xbox.
++    EXPECT_EQ(result.creation.vendor_id, 0x0001045EU);
++    EXPECT_NE(result.creation.vendor_id, 0x045EU);
++    EXPECT_EQ(static_cast<std::uint16_t>(result.creation.vendor_id), 0x045EU);
++    EXPECT_EQ(result.creation.product_id, kind == xbox_series ? 0x0B13U : 0x0B20U);
+     EXPECT_TRUE(result.xbox.saw_battery_descriptor);
+     EXPECT_TRUE(result.xbox.saw_canonical_evdev_axes);
+     EXPECT_TRUE(result.xbox.saw_gamepad_application_usage);
+@@ -1003,6 +1009,8 @@ TEST_F(LinuxBackendTest, SocketpairBackedSwitchProUsesNativeUhidProtocol) {
+   EXPECT_TRUE(result.creation.saw_create);
+   EXPECT_TRUE(result.creation.waited_for_start);
+   EXPECT_EQ(result.creation.name, lvh::profiles::switch_pro().name);
++  EXPECT_EQ(result.creation.vendor_id, 0x057EU);
++  EXPECT_EQ(result.creation.product_id, 0x2009U);
+   EXPECT_EQ(result.creation.physical_id, "libvirtualhid/uhid/057e:2009/12");
+   EXPECT_EQ(result.creation.unique_id, "057e:2009/streaming-host-gamepad-0");
+   EXPECT_TRUE(result.switch_pro.saw_subcommand_reply);
+diff --git a/tests/unit/test_linux_consumers.cpp b/tests/unit/test_linux_consumers.cpp
+index 8532b47d..e4083a7c 100644
+--- a/third-party/libvirtualhid/tests/unit/test_linux_consumers.cpp
++++ b/third-party/libvirtualhid/tests/unit/test_linux_consumers.cpp
+@@ -56,6 +56,18 @@ namespace {
+   using SdlGameController = std::unique_ptr<SDL_GameController, void (*)(SDL_GameController *)>;
+   constexpr std::string_view playstation_uhid_name = "Wireless Controller";
+ 
++  /**
++   * @brief Check the xpadneo prerequisite for native Guide-chord tests.
++   *
++   * @return Whether the loaded driver has Guide shift mode enabled.
++   */
++  bool has_xpadneo_guide_shift_mode() {
++    std::ifstream parameter {"/sys/module/hid_xpadneo/parameters/disable_shift_mode"};
++    std::string disabled;
++    parameter >> disabled;
++    return disabled == "N" || disabled == "0";
++  }
++
+   /**
+    * @brief SDL-visible gamepad case.
+    */
+@@ -474,15 +486,24 @@ namespace {
+     return false;
+   }
+ 
++  /**
++   * @brief Wait for SDL to observe a controller button press or release.
++   *
++   * @param controller Controller receiving virtual input.
++   * @param expected_button Button to inspect.
++   * @param pressed Expected button state.
++   * @return Whether SDL observed the expected state before the timeout.
++   */
+   bool wait_for_sdl_controller_button(
+     SDL_GameController *controller,
+-    SDL_GameControllerButton expected_button
++    SDL_GameControllerButton expected_button,
++    bool pressed = true
+   ) {
+     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds {3};
+     while (std::chrono::steady_clock::now() < deadline) {
+       SDL_GameControllerUpdate();
+       pump_sdl_events();
+-      if (SDL_GameControllerGetButton(controller, expected_button) != 0) {
++      if ((SDL_GameControllerGetButton(controller, expected_button) != 0) == pressed) {
+         return true;
+       }
+       std::this_thread::sleep_for(std::chrono::milliseconds {20});
+@@ -754,6 +775,49 @@ namespace {
+     );
+   }
+ 
++  /**
++   * @brief Verify that a Guide chord preserves both buttons through independent releases.
++   *
++   * @param controller SDL controller receiving virtual input.
++   * @param gamepad Virtual gamepad submitting the chord.
++   * @param logical_button Button held together with Guide.
++   * @param sdl_button Corresponding SDL button.
++   */
++  void expect_sdl_guide_chord(
++    SDL_GameController *controller,
++    lvh::Gamepad &gamepad,
++    lvh::GamepadButton logical_button,
++    SDL_GameControllerButton sdl_button
++  ) {
++    lvh::GamepadState state;
++    state.buttons.set(lvh::GamepadButton::guide);
++    ASSERT_TRUE(gamepad.submit(state).ok());
++    ASSERT_TRUE(wait_for_sdl_controller_button(controller, SDL_CONTROLLER_BUTTON_GUIDE));
++
++    state.buttons.set(logical_button);
++    ASSERT_TRUE(gamepad.submit(state).ok());
++    ASSERT_TRUE(wait_for_sdl_controller_button(controller, sdl_button));
++    EXPECT_NE(SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_GUIDE), 0);
++
++    state.buttons.set(lvh::GamepadButton::guide, false);
++    ASSERT_TRUE(gamepad.submit(state).ok());
++    ASSERT_TRUE(wait_for_sdl_controller_button(controller, SDL_CONTROLLER_BUTTON_GUIDE, false));
++    EXPECT_NE(SDL_GameControllerGetButton(controller, sdl_button), 0);
++
++    state.buttons.set(lvh::GamepadButton::guide);
++    ASSERT_TRUE(gamepad.submit(state).ok());
++    ASSERT_TRUE(wait_for_sdl_controller_button(controller, SDL_CONTROLLER_BUTTON_GUIDE));
++    EXPECT_NE(SDL_GameControllerGetButton(controller, sdl_button), 0);
++
++    state.buttons.set(logical_button, false);
++    ASSERT_TRUE(gamepad.submit(state).ok());
++    ASSERT_TRUE(wait_for_sdl_controller_button(controller, sdl_button, false));
++    EXPECT_NE(SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_GUIDE), 0);
++
++    ASSERT_TRUE(gamepad.submit({}).ok());
++    ASSERT_TRUE(wait_for_sdl_controller_button(controller, SDL_CONTROLLER_BUTTON_GUIDE, false));
++  }
++
+   void exercise_sdl_canonical_gamepad_controller(
+     const SdlGamepadConsumerCase &test_case,
+     const lvh::DeviceProfile &expected_profile,
+@@ -808,6 +872,13 @@ namespace {
+       }
+     }
+ 
++    for (const auto &[logical_button, sdl_button] : button_cases) {
++      if (logical_button != guide) {
++        SCOPED_TRACE(std::format("Guide chord with button {}", std::to_underlying(logical_button)));
++        ASSERT_NO_FATAL_FAILURE(expect_sdl_guide_chord(controller.get(), gamepad, logical_button, sdl_button));
++      }
++    }
++
+     lvh::GamepadState trigger_state;
+     trigger_state.left_trigger = 0.25F;
+     trigger_state.right_trigger = 0.75F;
+@@ -1036,6 +1107,29 @@ TEST_F(LinuxConsumerTest, SdlSeesXboxOneCanonicalButtons) {
+   });
+ }
+ 
++TEST_F(LinuxConsumerTest, SdlSeesXboxGuideChordsWithXpadneoShiftMode) {
++  ASSERT_TRUE(HasReadableWritableDeviceNode("/dev/uhid"));
++  if (!has_xpadneo_guide_shift_mode()) {
++    GTEST_SKIP() << "This test requires loaded xpadneo with Guide shift mode enabled";
++  }
++
++  for (const auto kind : {lvh::GamepadProfileKind::xbox_one, lvh::GamepadProfileKind::xbox_series}) {
++    const auto series = kind == lvh::GamepadProfileKind::xbox_series;
++    const SdlGamepadConsumerCase test_case {
++      .profile = *lvh::profiles::gamepad_profile(kind),
++      .name_suffix = "SDL Xbox Guide Chords",
++      .stable_id = "libvirtualhid-sdl-xpadneo-guide-test",
++      .expected_product_id = static_cast<std::uint16_t>(series ? 0x0B13 : 0x0B20),
++      .minimum_buttons = series ? 16 : 15,
++      .minimum_axes = 6,
++      .require_sdl_rumble = true,
++      .require_trigger_rumble = true,
++      .require_battery = true,
++    };
++    ASSERT_NO_FATAL_FAILURE(run_sdl_canonical_gamepad_test(test_case));
++  }
++}
++
+ TEST_F(LinuxConsumerTest, SdlSeesXboxSeriesCanonicalButtons) {
+   ASSERT_TRUE(HasReadableWritableDeviceNode("/dev/uhid"));
+ 

@@ -4,3 +4,8 @@ build/
 .mamba
 build.log
 worktrees/
+.vscode/settings.json
+build.log
+build-all.log
+build-stable.log
+build-beta.log
