@@ -7,7 +7,7 @@
 # Source repo
 %global author LizardByte
 %global source Sunshine
-%global sourcerepo https://github.com/LizardByte/Sunshine
+%global sourcerepo https://github.com/SunshineStream/Sunshine
 %global tag 0
 %global commit 0
 %global version 0

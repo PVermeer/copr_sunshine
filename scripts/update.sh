@@ -63,13 +63,19 @@ get_tag_by_release() {
 	tag_type=$2
 
 	if [ "$tag_type" = "stable" ]; then
-		tag=$(curl -s https://api.github.com/repos/LizardByte/Sunshine/releases/latest |
-			jq -r .tag_name)
+		tag=$(curl -s https://api.github.com/repos/SunshineStream/Sunshine/releases/latest |
+			jq -r .tag_name) || {
+			echo_error "Failed get_tag_by_release"
+			return 1
+		}
 	elif [ "$tag_type" = "beta" ]; then
 		tag=$(git ls-remote --tags "$repo" |
 			awk -F/ '{print $3}' |
 			sort -V |
-			tail -n 1)
+			tail -n 1) || {
+			echo_error "Failed get_tag_by_release"
+			return 1
+		}
 	fi
 
 	if [ -z "$tag" ]; then
@@ -87,12 +93,15 @@ get_commit_from_tag() {
 	repo=$1
 	tag=$2
 
-	commit=$(git ls-remote --tags https://github.com/LizardByte/Sunshine |
+	commit=$(git ls-remote --tags https://github.com/SunshineStream/Sunshine |
 		grep "refs/tags/$tag$" |
-		cut -f1) || return 1
+		cut -f1) || {
+		echo_error "Failed get_commit_from_tag"
+		return 1
+	}
 
 	if [ -z "$commit" ]; then
-		echo "Failed to get latest tag or there are no tags"
+		echo_error "Failed get_commit_from_tag"
 		return 1
 	fi
 

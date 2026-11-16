@@ -1,4 +1,4 @@
-# RPM build of [Sunshine](https://github.com/LizardByte/Sunshine)
+# RPM build of [Sunshine](https://github.com/SunshineStream/Sunshine)
 
 | Release         | Status                                                                                                                                                                                                                | Install       |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
@@ -13,4 +13,4 @@ https://copr.fedorainfracloud.org/coprs/pvermeer/sunshine
 
 ### Credits
 
-- https://github.com/LizardByte/Sunshine
+- https://github.com/SunshineStream/Sunshine
