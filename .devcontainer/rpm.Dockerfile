@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 RUN sudo dnf update -y
-RUN sudo dnf install -y git dnf-plugins-core rpmdevtools jq rpmlint tree shfmt
+RUN sudo dnf install -y git dnf-plugins-core rpmdevtools jq rpmlint tree shellcheck rustup
 
 # Create the user
 ARG USERNAME=vscode
