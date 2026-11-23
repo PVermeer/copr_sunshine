@@ -2,7 +2,7 @@ name: Weekly COPR status beta
 
 on:
   schedule:
-    - cron: "00 8 * * 1"
+    - cron: "30 19 * * 0"
   workflow_dispatch:
 
 jobs:
