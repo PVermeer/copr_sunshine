@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 RUN sudo dnf update -y
-RUN sudo dnf install -y git dnf-plugins-core rpmdevtools jq rpmlint tree shellcheck rustup
+RUN sudo dnf install -y git dnf-plugins-core rpmdevtools jq rpmlint tree shellcheck rustup gcc gcc-c++ make cmake clang python3 python3-pip pipx python3-jinja2 python3-setuptools uv
 
 # Create the user
 ARG USERNAME=vscode
@@ -12,3 +12,5 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 USER $USERNAME
+
+RUN rustup-init -y
